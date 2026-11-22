@@ -22,9 +22,10 @@ export function CountryFlag({ country }: { country: Country }) {
     >
       {flagUrl && flagUrl !== failedUrl ? (
         <Image
+          accessible
           accessibilityLabel={flagAlt ?? `Flag of ${commonName}`}
           source={{ uri: flagUrl }}
-          resizeMode="cover"
+          resizeMode="contain"
           style={styles.image}
           onError={() => setFailedUrl(flagUrl)}
         />
@@ -53,6 +54,7 @@ export function CountryCard({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityHint="Opens country details"
       accessibilityLabel={`${country.commonName}, ${capital}, ${region}`}
       onPress={onPress}
       style={({ pressed }) => [

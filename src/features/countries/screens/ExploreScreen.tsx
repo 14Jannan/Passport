@@ -1,6 +1,7 @@
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useAppSelector } from '../../../app/store';
 import { AppButton } from '../../../components/AppButton';
@@ -11,6 +12,17 @@ import { useGetCountriesQuery } from '../api/countriesApi';
 import { CountryCard } from '../components/CountryCard';
 import { CountryListState } from '../components/CountryListState';
 import { useCountryTheme } from '../countryTheme';
+import { CountrySearchBar } from '../components/CountrySearchBar';
+import { RegionFilterChips } from '../components/RegionFilterChips';
+import { CountrySortModal } from '../components/CountrySortModal';
+import { useDebouncedSearch } from '../hooks/useDebouncedSearch';
+import {
+  defaultSort,
+  filterCountries,
+  sortCountries,
+  type Region,
+  type CountrySort,
+} from '../utils/discovery';
 
 function CardGap() {
   return <View style={styles.gap} />;
@@ -34,6 +46,20 @@ export function ExploreScreen() {
       refetchOnReconnect: true,
       refetchOnMountOrArgChange: 300,
     });
+
+  const search = useDebouncedSearch();
+  const [region, setRegion] = useState<Region>('All');
+  const [sort, setSort] = useState<CountrySort>(defaultSort);
+  const countries = useMemo(
+    () =>
+      sortCountries(filterCountries(data ?? [], search.query, region), sort),
+    [data, region, search.query, sort],
+  );
+
+  function clearFilters() {
+    search.change('');
+    setRegion('All');
+  }
 
   function refresh() {
     if (!isFetching) {
@@ -59,6 +85,9 @@ export function ExploreScreen() {
           Discover your next destination
         </Text>
       </View>
+      <CountrySearchBar value={search.text} onChange={search.change} />
+      <RegionFilterChips value={region} onChange={setRegion} />
+      <CountrySortModal value={sort} onChange={setSort} />
       {isError && data ? (
         <View style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={{ color: colors.text }}>
@@ -78,7 +107,7 @@ export function ExploreScreen() {
           accessibilityLiveRegion="polite"
           style={[styles.count, { color: colors.muted }]}
         >
-          {data.length} {data.length === 1 ? 'country' : 'countries'}
+          {countries.length} {countries.length === 1 ? 'country' : 'countries'}
         </Text>
       ) : null}
     </View>
@@ -87,6 +116,7 @@ export function ExploreScreen() {
   return (
     <AppThemeOverride.Provider value={theme}>
       <FlatList
+        testID="country-list"
         style={{ backgroundColor: colors.background }}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
@@ -98,10 +128,13 @@ export function ExploreScreen() {
             failed={!data && isError}
             offline={offline}
             retry={refresh}
+            clearFilters={
+              region !== 'All' || search.query ? clearFilters : undefined
+            }
           />
         }
         ItemSeparatorComponent={CardGap}
-        data={data}
+        data={countries}
         keyExtractor={item => item.cca3}
         renderItem={({ item }) => (
           <CountryCard
