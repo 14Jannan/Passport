@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { Country } from '../types';
+import type { Country, CountryDetails } from '../types';
+import { safeMapUrl } from '../utils/countryDetails';
 
 const optionalText = z.string().trim().min(1).nullable().catch(null);
 const optionalNumber = z.number().finite().nonnegative().nullable().catch(null);
@@ -17,7 +18,7 @@ const countryRecord = z.object({
   area: optionalNumber,
   flags: z
     .object({
-      // Android and iOS Image support PNG without a separate SVG renderer.
+      // Android and iOS Image support PNG without an SVG renderer.
       png: z
         .string()
         .trim()
@@ -30,6 +31,48 @@ const countryRecord = z.object({
     .catch(null),
 });
 
+const detailRecord = countryRecord.extend({
+  languages: z.record(z.string(), z.unknown()).catch({}),
+  currencies: z.record(z.string(), z.unknown()).catch({}),
+  timezones: z.array(z.unknown()).catch([]),
+  continents: z.array(z.unknown()).catch([]),
+  latlng: z
+    .tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)])
+    .nullable()
+    .catch(null),
+  maps: z
+    .object({ googleMaps: optionalText, openStreetMaps: optionalText })
+    .nullable()
+    .catch(null),
+});
+
+const currencyRecord = z.object({ name: optionalText, symbol: optionalText });
+
+function strings(values: unknown[]) {
+  return [
+    ...new Set(
+      values.flatMap(value =>
+        typeof value === 'string' && value.trim() ? [value.trim()] : [],
+      ),
+    ),
+  ];
+}
+
+function toCountry(data: z.infer<typeof countryRecord>): Country {
+  return {
+    cca3: data.cca3,
+    commonName: data.name.common,
+    officialName: data.name.official,
+    capitals: strings(data.capital),
+    region: data.region,
+    subregion: data.subregion,
+    population: data.population,
+    area: data.area,
+    flagUrl: data.flags?.png ?? null,
+    flagAlt: data.flags?.alt ?? null,
+  };
+}
+
 export function normalizeCountries(payload: unknown): Country[] | null {
   if (!Array.isArray(payload)) {
     return null;
@@ -38,27 +81,41 @@ export function normalizeCountries(payload: unknown): Country[] | null {
   const countries = new Map<string, Country>();
   for (const record of payload) {
     const { data } = countryRecord.safeParse(record);
-    if (!data || countries.has(data.cca3)) {
-      continue;
+    if (data && !countries.has(data.cca3)) {
+      countries.set(data.cca3, toCountry(data));
     }
-
-    countries.set(data.cca3, {
-      cca3: data.cca3,
-      commonName: data.name.common,
-      officialName: data.name.official,
-      capitals: data.capital.flatMap(value =>
-        typeof value === 'string' && value.trim() ? [value.trim()] : [],
-      ),
-      region: data.region,
-      subregion: data.subregion,
-      population: data.population,
-      area: data.area,
-      flagUrl: data.flags?.png ?? null,
-      flagAlt: data.flags?.alt ?? null,
-    });
   }
-
   return payload.length > 0 && countries.size === 0
     ? null
     : [...countries.values()];
+}
+
+export function normalizeCountryDetails(
+  payload: unknown,
+  code: string,
+): CountryDetails | null {
+  for (const record of Array.isArray(payload) ? payload : [payload]) {
+    const { data } = detailRecord.safeParse(record);
+    if (!data || data.cca3 !== code) {
+      continue;
+    }
+
+    return {
+      ...toCountry(data),
+      languages: strings(Object.values(data.languages)),
+      currencies: Object.entries(data.currencies).flatMap(([key, value]) => {
+        const parsed = currencyRecord.safeParse(value);
+        return /^[A-Z]{3}$/.test(key) && parsed.success
+          ? [{ code: key, ...parsed.data }]
+          : [];
+      }),
+      timezones: strings(data.timezones),
+      continents: strings(data.continents),
+      coordinates: data.latlng,
+      mapUrl:
+        safeMapUrl(data.maps?.openStreetMaps) ??
+        safeMapUrl(data.maps?.googleMaps),
+    };
+  }
+  return null;
 }

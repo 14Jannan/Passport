@@ -10,3 +10,18 @@ export interface Country {
   flagUrl: string | null;
   flagAlt: string | null;
 }
+
+export interface CountryCurrency {
+  code: string;
+  name: string | null;
+  symbol: string | null;
+}
+
+export interface CountryDetails extends Country {
+  languages: string[];
+  currencies: CountryCurrency[];
+  timezones: string[];
+  continents: string[];
+  coordinates: [latitude: number, longitude: number] | null;
+  mapUrl: string | null;
+}
