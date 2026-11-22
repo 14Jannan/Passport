@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { useColorScheme } from 'react-native';
 
 export const palette = {
@@ -43,7 +44,10 @@ export const darkTheme: typeof lightTheme = {
   },
 };
 
+export const AppThemeOverride = createContext<typeof lightTheme | null>(null);
+
 export function useAppTheme() {
   const dark = useColorScheme() === 'dark';
-  return { dark, theme: dark ? darkTheme : lightTheme };
+  const override = useContext(AppThemeOverride);
+  return { dark, theme: override ?? (dark ? darkTheme : lightTheme) };
 }
