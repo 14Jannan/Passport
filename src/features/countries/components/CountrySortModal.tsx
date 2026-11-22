@@ -1,4 +1,5 @@
 import { Feather } from '@react-native-vector-icons/feather/static';
+import { useState } from 'react';
 import {
   Keyboard,
   Modal,
@@ -12,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppHeader } from '../../../components/AppHeader';
 import { useCountryTheme } from '../countryTheme';
 import { defaultSort, sortOptions, type CountrySort } from '../utils/discovery';
-import { useState } from 'react';
 
 export function CountrySortModal({
   value,
@@ -41,17 +41,23 @@ export function CountrySortModal({
           Keyboard.dismiss();
           setVisible(true);
         }}
-        style={[
+        style={({ pressed }) => [
           styles.trigger,
-          { backgroundColor: colors.surface, borderColor: colors.border },
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            opacity: pressed ? 0.8 : 1,
+          },
+          theme.shadows.sm,
         ]}
       >
-        <Feather name="sliders" size={19} color={strong} />
+        <Feather name="sliders" size={18} color={strong} />
         <Text style={[styles.text, { color: colors.text }]}>
           Sort · {activeLabel}
         </Text>
         <Feather name="chevron-down" size={18} color={strong} />
       </Pressable>
+
       <Modal
         visible={visible}
         animationType="fade"
@@ -59,10 +65,20 @@ export function CountrySortModal({
         onRequestClose={close}
       >
         <SafeAreaView style={styles.overlay}>
+          <Pressable style={styles.backdrop} onPress={close} />
           <View
             accessibilityViewIsModal
-            style={[styles.panel, { backgroundColor: colors.surface }]}
+            style={[
+              styles.panel,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+              theme.shadows.lg,
+            ]}
           >
+            <View style={styles.sheetHandle} />
+
             <View style={styles.heading}>
               <View style={styles.headingText}>
                 <AppHeader title="Sort countries" />
@@ -76,6 +92,7 @@ export function CountrySortModal({
                 <Feather name="x" size={22} color={strong} />
               </Pressable>
             </View>
+
             <ScrollView
               keyboardShouldPersistTaps="handled"
               style={styles.options}
@@ -91,25 +108,38 @@ export function CountrySortModal({
                     onPress={() => choose(option.value)}
                     style={[
                       styles.option,
-                      { backgroundColor: selected ? tint : colors.surface },
+                      {
+                        backgroundColor: selected ? tint : 'transparent',
+                        borderColor: selected ? colors.primary : 'transparent',
+                        borderWidth: selected ? 1 : 0,
+                      },
                     ]}
                   >
-                    <Text style={[styles.text, { color: colors.text }]}>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        {
+                          color: selected ? strong : colors.text,
+                          fontWeight: selected ? '700' : '500',
+                        },
+                      ]}
+                    >
                       {option.label}
                     </Text>
                     {selected && (
-                      <Feather name="check" size={19} color={strong} />
+                      <Feather name="check" size={18} color={strong} />
                     )}
                   </Pressable>
                 );
               })}
             </ScrollView>
+
             <Pressable
               accessibilityRole="button"
               onPress={() => choose(defaultSort)}
               style={styles.reset}
             >
-              <Text style={[styles.text, { color: strong }]}>
+              <Text style={[styles.resetText, { color: strong }]}>
                 Reset sorting
               </Text>
             </Pressable>
@@ -126,44 +156,64 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 8,
-    minHeight: 48,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    minHeight: 46,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
   },
   overlay: {
     flex: 1,
-    backgroundColor: '#00000066',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     justifyContent: 'flex-end',
     alignItems: 'center',
     padding: 12,
   },
+  backdrop: {
+    ...StyleSheet.absoluteFill,
+  },
   panel: {
     width: '100%',
-    maxWidth: 480,
-    maxHeight: '100%',
-    borderRadius: 20,
-    padding: 16,
-    gap: 8,
+    maxWidth: 500,
+    maxHeight: '85%',
+    borderRadius: 28,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 20,
+    gap: 12,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#88888844',
+    alignSelf: 'center',
+    marginBottom: 4,
   },
   heading: { flexDirection: 'row', alignItems: 'center' },
   headingText: { flex: 1 },
   options: { flexGrow: 0, flexShrink: 1 },
   option: {
     minHeight: 48,
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 8,
+    marginVertical: 2,
   },
+  optionText: { fontSize: 16 },
   close: {
     minWidth: 48,
     minHeight: 48,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  reset: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 12 },
-  text: { flexShrink: 1, fontSize: 16, fontWeight: '600' },
+  reset: {
+    minHeight: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  resetText: { fontSize: 15, fontWeight: '700' },
+  text: { flexShrink: 1, fontSize: 15, fontWeight: '600' },
 });

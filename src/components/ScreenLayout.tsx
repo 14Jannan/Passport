@@ -12,6 +12,7 @@ export function ScreenLayout({ children }: PropsWithChildren) {
         {
           padding: theme.spacing.lg,
           gap: theme.spacing.md,
+          paddingBottom: 96, // Safe space above floating bottom tab bar
         },
       ]}
       style={{ backgroundColor: theme.colors.background }}
