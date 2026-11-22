@@ -1,6 +1,6 @@
 # Passport
 
-Passport is a React Native CLI application for travel discovery and a personal travel journal. This branch adds authentication for IN3210 Mobile Applications Development, Assignment 2 (234088L).
+Passport is a React Native CLI application for travel discovery and a personal travel journal. Passport is developed for IN3210 Mobile Applications Development, Assignment 2 (234088L).
 
 ## Setup
 
@@ -24,13 +24,23 @@ On the login screen, select **Use demo credentials**, then select **Sign in**. T
 
 ## Screens
 
-| Area           | Screens                                                              |
-| -------------- | -------------------------------------------------------------------- |
-| Authentication | Session splash, Sign in, Create demo account                         |
-| Protected tabs | Explore, Favourites, Journal, Profile                                |
-| Stack screens  | Search, Destination details, Journal entry, New/edit entry, Settings |
+| Area           | Screens                                                  |
+| -------------- | -------------------------------------------------------- |
+| Authentication | Session splash, Sign in, Create demo account             |
+| Protected tabs | Explore, Favourites, Journal, Profile                    |
+| Stack screens  | Country details, Journal entry, New/edit entry, Settings |
 
-DummyJSON is a public mock service. Logout is local and does not revoke tokens on the service. Travel statistics, the catalog, saved destinations, and journal editing retain their foundation placeholders.
+DummyJSON is a public mock service. Logout is local and does not revoke tokens on the service. Travel statistics, saved destinations, and journal editing retain their foundation placeholders.
+
+## Explore countries
+
+Explore fetches countries from the public [Countrydrop v3.1 compatibility API](https://plainworkdigital.com/d20261017a29/api-reference) using `GET /v3.1/all?fields=name,cca3,capital,region,subregion,population,area,flags`. Countrydrop serves a published snapshot of the original REST Countries dataset. The original v3.1 host returns a [deprecation response](https://restcountries.com/docs/countries/legacy-api-deprecation) and the official v5 catalog requires an API key. Explore needs no key or additional dependency. Countrydrop documents snapshot freshness and public request limits.
+
+- The country endpoint extends the existing RTK Query service. RTK Query deduplicates requests and shares one catalog cache between Explore and the basic Country Details screen. The adapter normalizes names, country codes, capitals, regions, population, area, and flag metadata.
+- Search trims input and matches partial common or official names case-insensitively after a 300 ms debounce. Region chips update immediately. The Antarctica chip also matches the API value `Antarctic`.
+- A memoized result applies search and filtering before sorting a copy. Country names use locale-aware comparison. Numeric ties use name and then country code, and missing numeric values sort last in either direction.
+- All three controls operate on cached data to keep interaction responsive and avoid refetching for each edit. Initial loads show skeleton cards. Pull-to-refresh and reconnect can request fresh data. Failed refreshes preserve the last in-memory results and offer retry. A cold start without connectivity requires a network connection to load the catalog.
+- Flags use PNG URLs from the response with a visual fallback when an image is missing or fails. Cards navigate using only the ISO alpha-3 code. Country Details shows basic information, and the bookmark icon is a placeholder.
 
 ## Checks
 
