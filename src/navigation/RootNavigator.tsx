@@ -11,11 +11,8 @@ import { useAppSelector } from '../app/store';
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
 import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
 import { SessionSplash } from '../features/auth/screens/SessionSplash';
-import {
-  DestinationDetailsScreen,
-  DiscoverScreen,
-  SearchScreen,
-} from '../features/discover/screens';
+import { CountryDetailsScreen } from '../features/countries/screens/CountryDetailsScreen';
+import { ExploreScreen } from '../features/countries/screens/ExploreScreen';
 import {
   EditJournalEntryScreen,
   JournalEntryScreen,
@@ -50,7 +47,7 @@ function AppTabs() {
     <Tabs.Navigator screenOptions={tabOptions}>
       <Tabs.Screen
         name="Discover"
-        component={DiscoverScreen}
+        component={ExploreScreen}
         options={{ title: 'Explore' }}
       />
       <Tabs.Screen
@@ -94,11 +91,10 @@ export function RootNavigator() {
             options={{ headerShown: false }}
           />
           <Main.Screen
-            name="DestinationDetails"
-            component={DestinationDetailsScreen}
-            options={{ title: 'Destination' }}
+            name="CountryDetails"
+            component={CountryDetailsScreen}
+            options={{ title: 'Country details' }}
           />
-          <Main.Screen name="Search" component={SearchScreen} />
           <Main.Screen
             name="JournalEntry"
             component={JournalEntryScreen}
