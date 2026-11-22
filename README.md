@@ -2,6 +2,8 @@
 
 Passport is a React Native CLI application for travel discovery and a personal travel journal. Passport is developed for IN3210 Mobile Applications Development, Assignment 2 (234088L).
 
+**Tagline:** Explore the World. Capture the Journey.
+
 ## Setup
 
 1. Install Node.js 22.11 or newer (CI uses Node.js 24) and run `npm ci`.
@@ -15,58 +17,106 @@ On the login screen, select **Use demo credentials**, then select **Sign in**. T
 
 **Create a demo account** calls DummyJSON’s simulated registration endpoint. Use sample details and a unique dummy password. DummyJSON returns a temporary success response without saving the account, so the new credentials cannot authenticate. The app returns to login with a confirmation that explains this behavior. [DummyJSON users documentation](https://dummyjson.com/docs/users#users-add)
 
+## Premium UI/UX & Design Identity
+
+Passport uses the **Passport Explore — Premium Travel Editorial** visual identity, balancing adventurous exploration with sophisticated typography and rich destination photography.
+
+### Color Tokens
+
+| Token             | Light Theme | Dark Theme | Purpose                                 |
+| ----------------- | ----------- | ---------- | --------------------------------------- |
+| Background        | `#F8F7F2`   | `#101B24`  | Primary screen canvas                   |
+| Primary Surface   | `#FFFFFF`   | `#1C2A35`  | Card backgrounds and sheets             |
+| Secondary Surface | `#F0F3F1`   | `#263844`  | Inset backgrounds and pill containers   |
+| Primary Text      | `#172B3A`   | `#F3F6F7`  | Headings and high-emphasis labels       |
+| Secondary Text    | `#667784`   | `#A8B7C2`  | Subtitles, captions and metadata        |
+| Primary Button    | `#137C78`   | `#38B5AA`  | Primary actions and active highlights   |
+| Primary Dark      | `#0B5957`   | `#28948A`  | High-contrast brand elements            |
+| Accent            | `#E88C70`   | `#F09C81`  | Highlights, badges and saved heart icon |
+| Soft Mint         | `#DDF1E9`   | `#1F3D39`  | Subtle highlights and tint surfaces     |
+| Border            | `#E4E9E8`   | `#334550`  | Structural dividers and card borders    |
+| Success           | `#27866F`   | `#55C49D`  | Positive feedback and confirmations     |
+| Error             | `#C64242`   | `#FF7777`  | Form validation and connectivity errors |
+
+### Official Assignment Bonus Feature: Persistent Dark Mode & System Theme
+
+Passport features complete **Light, Dark, and System appearance modes**:
+
+- **Light:** Bright, clean, warm-neutral editorial aesthetic.
+- **Dark:** Deep, immersive cinematic palette designed for low-light travel planning.
+- **System:** Synchronizes automatically with the device's operating system color scheme using React Native's `Appearance` API.
+- **Persistence:** Selected appearance mode is persisted across app restarts via `AsyncStorage` under `@passport/preferences/appearance`.
+
+### Appearance Settings
+
+Located in **Profile → Settings**:
+
+- Segmented radio selector supporting Light, Dark, and System modes.
+- Instant live updates across all mounted screens, navigation headers, floating tab bar, and system status bar without restarting the app or resetting navigation.
+
+### Destination Photography & Attribution
+
+Passport integrates curated travel photography from [Unsplash](https://unsplash.com) (licensed under the Unsplash License — free for commercial and non-commercial use):
+
+- **Japan (`JPN`):** Chureito Pagoda & Mount Fuji by David Becker (`@becker_david`)
+- **Sri Lanka (`LKA`):** Sigiriya Rock Fortress by Dylan Shaw (`@dylanshaw`)
+- **France (`FRA`):** Eiffel Tower Twilight by Chris Karidis (`@chriskaridis`)
+- **Canada (`CAN`):** Moraine Lake & Canadian Rockies by Kalep Tatu (`@kaleptatu`)
+- **Australia (`AUS`):** Sydney Opera House by Dan Freeman (`@danfreemanphoto`)
+- **Italy (`ITA`):** Roman Colosseum by David Kohler (`@dkohler`)
+- **Switzerland (`CHE`):** Matterhorn Peak, Zermatt by Dino Reichmuth (`@dinoreichmuth`)
+- **Brazil (`BRA`):** Christ the Redeemer & Sugarloaf by Agustin Diaz Gargiulo (`@agustindiazg`)
+- **United States (`USA`):** Grand Canyon Sunset by Gerd Eichmann (`@gerdeichmann`)
+- **United Kingdom (`GBR`):** Big Ben & Westminster by Eva Dang (`@evadan`)
+- **Germany (`DEU`):** Neuschwanstein Castle by Daniel Seßler (`@danielsessler`)
+- **Spain (`ESP`):** Sagrada Familia, Barcelona by Enes (`@enes`)
+- **Egypt (`EGY`):** Great Pyramids of Giza by Simon Berger (`@simonberger`)
+- **India (`IND`):** Taj Mahal Sunrise by Jovyn Chamb (`@jovynchamb`)
+- **Greece (`GRC`):** Oia Santorini by Matthew Waring (`@matthewwaring`)
+- **Iceland (`ISL`):** Aurora over Waterfalls by Jonatan Pie (`@jonatanpie`)
+- **New Zealand (`NZL`):** Milford Sound by Tobias Keller (`@tobiasreich`)
+- **Norway (`NOR`):** Fjord Reflections by Jarand K. Løkeland (`@jarand`)
+- **Thailand (`THA`):** Phi Phi Islands by Sara Dubler (`@saradubler`)
+- **South Africa (`ZAF`):** Table Mountain Sunset by Kobus van der Walt (`@kobus`)
+
+For countries without curated photography, an elegant fallback combining the country's flag and thematic container is displayed.
+
+### Animations & Micro-Interactions
+
+- **Card Press Scale:** Spring micro-interaction (`Animated.spring`) providing tactile feedback on touch.
+- **Heart Toggle Bounce:** Elastic sequence animation (`Animated.sequence`) when saving or removing favourites.
+- **Image Fade-in:** Smooth opacity transition as destination photos resolve.
+- **Floating Bottom Navigation:** Elevated navigation pill bar (`FloatingTabBar`) with safe-area spacing and active tab pill highlights.
+
 ## Authentication architecture
 
-- React Hook Form and Zod validate input. The existing RTK Query service calls `POST /auth/login`, `GET /auth/me`, `POST /auth/refresh`, and `POST /users/add` over HTTPS. The app parses responses and shows messages for validation, rejected credentials, and connectivity failures. [DummyJSON authentication documentation](https://dummyjson.com/docs/auth)
-- `src/features/auth/services/authStorage.ts` stores the access token, refresh token, and estimated expiration in iOS Keychain or Android Keystore-backed storage. Redux holds the profile and session status. Authentication requests are untracked in RTK Query and Redux DevTools is disabled because request actions can carry credentials in memory. AsyncStorage is used for non-sensitive preferences.
-- On launch, the splash screen stays visible while Passport reads and verifies the saved session. It refreshes a locally expired token or one rejected by the API, verifies the refreshed profile, and saves the rotated credentials before opening the protected tabs. Expired active sessions are also checked while the app is foregrounded. Rejected or malformed credentials are cleared. A temporary network failure keeps protected routes closed and lets the user retry.
-- Logout clears secure storage, resets the RTK Query cache and returns to a fresh login stack. If the OS cannot delete the credentials, Passport closes the protected stack and offers a deletion retry. Complete the retry before closing the app to ensure the saved credentials are removed.
+- React Hook Form and Zod validate input. The existing RTK Query service calls `POST /auth/login`, `GET /auth/me`, `POST /auth/refresh`, and `POST /users/add` over HTTPS. The app parses responses and shows messages for validation, rejected credentials, and connectivity failures.
+- `src/features/auth/services/authStorage.ts` stores tokens in iOS Keychain or Android Keystore-backed storage. Redux holds the profile and session status.
+- Session lifecycle hook checks validity, refreshes tokens on startup or foreground transitions, and manages clean logout.
 
 ## Screens
 
-| Area           | Screens                                                  |
-| -------------- | -------------------------------------------------------- |
-| Authentication | Session splash, Sign in, Create demo account             |
-| Protected tabs | Explore, Favourites, Journal, Profile                    |
-| Stack screens  | Country details, Journal entry, New/edit entry, Settings |
-
-DummyJSON is a public mock service. Logout is local and does not revoke tokens on the service. Travel statistics and journal editing retain their foundation placeholders.
-
-## Explore countries
-
-Explore fetches countries from the public [Countrydrop v3.1 compatibility API](https://plainworkdigital.com/d20261017a29/api-reference) using `GET /v3.1/all?fields=name,cca3,capital,region,subregion,population,area,flags`. Countrydrop serves a published snapshot of the original REST Countries dataset. The original v3.1 host returns a [deprecation response](https://restcountries.com/docs/countries/legacy-api-deprecation) and the official v5 catalog requires an API key. Explore needs no key or additional dependency. Countrydrop documents snapshot freshness and public request limits.
-
-- The country endpoint extends the existing RTK Query service. RTK Query deduplicates requests and keeps one in-memory catalog cache for Explore. The adapter normalizes names, country codes, capitals, regions, population, area, and flag metadata.
-- Search trims input and matches partial common or official names case-insensitively after a 300 ms debounce. Region chips update immediately. The Antarctica chip also matches the API value `Antarctic`.
-- A memoized result applies search and filtering before sorting a copy. Country names use locale-aware comparison. Numeric ties use name and then country code, and missing numeric values sort last in either direction.
-- All three controls operate on cached data to keep interaction responsive and avoid refetching for each edit. Initial loads show skeleton cards. Pull-to-refresh and reconnect can request fresh data. Failed refreshes preserve the last in-memory results and offer retry. A cold start without connectivity requires a network connection to load the catalog.
-- Flags use PNG URLs from the response with a visual fallback when an image is missing or fails. Cards navigate using only the ISO alpha-3 code. Each card includes a heart button to toggle favourite status.
-
-## Country details
-
-Explore passes only the ISO alpha-3 country code (`cca3`) to the existing protected stack. Details independently fetches `GET /v3.1/alpha/{cca3}?fields=...` through the same [Countrydrop service](https://plainworkdigital.com/d20261017a29/api-reference). RTK Query caches detail records by code. The adapter accepts an object or array and verifies that the returned identifier matches the route. The native Back action returns to the mounted Explore screen with its search, region, and sorting state preserved.
-
-Country Details shows flags, official names, capital, population, area, geography, languages, currencies, and time zones. The Open map action uses React Native Linking for allowlisted HTTPS map URLs supplied by the API. Missing optional fields get fallback values. Invalid and missing codes get separate states. Failed requests can be retried and cached details remain visible if a refresh fails.
-
-The header Share action uses React Native Share to send the country name, capital, region, and the public country endpoint as plain text. Dismissal is quiet and native failures show a retryable message. Android reports a resolved share dialog without identifying cancellation. [React Native Share documentation](https://reactnative.dev/docs/0.86/share)
-
-Favourites, comparison, bucket-list status, and journal actions are reserved for later prompts. They have no active buttons that lead to placeholders.
+| Screen                | Status      | Description                                                                        |
+| --------------------- | ----------- | ---------------------------------------------------------------------------------- |
+| **Session Splash**    | Implemented | Brand compass icon, wordmark, travel quote, session check                          |
+| **Sign In**           | Implemented | Travel brand presentation, validated form, demo account helper                     |
+| **Register**          | Implemented | DummyJSON registration simulation with validation feedback                         |
+| **Explore**           | Implemented | Greeting, featured destination banner, search, region filters, sort, photo cards   |
+| **Favourites**        | Implemented | Saved destinations wishlist, search, photo cards, remove action, empty states      |
+| **Country Details**   | Implemented | Panoramic photography, flag badge, overview grid, geography, culture, native share |
+| **Profile**           | Implemented | Initials avatar, username, saved places counter, settings entry, logout            |
+| **Settings**          | Implemented | Appearance mode selector (Light/Dark/System), application credits                  |
+| **Journal**           | Foundation  | Scheduled for Prompt 6 (notes & photos)                                            |
+| **Journal Entry**     | Foundation  | Scheduled for Prompt 6                                                             |
+| **New/Edit Entry**    | Foundation  | Scheduled for Prompt 6                                                             |
+| **Bucket List**       | Foundation  | Scheduled for Prompt 7                                                             |
+| **Travel Statistics** | Foundation  | Scheduled for future release                                                       |
 
 ## Favourites
 
-Users save countries from Explore or Country Details using a reusable FavouriteButton. The same Redux Toolkit slice drives favourite state across every screen. Favourites persist across app restarts through AsyncStorage using user-scoped keys (`passport:favourites:<userId>`).
-
-- **Redux Toolkit implementation.** A `favouritesSlice` manages `addFavourite`, `removeFavourite`, `toggleFavourite`, `updateFavourite`, and `hydrateFavourites` actions. Typed selectors (`selectAllFavourites`, `selectIsFavourite`, `selectFavouriteCount`) keep all screens in sync through a single source of truth.
-- **AsyncStorage persistence.** `favouritesStorage.ts` provides `loadFavourites(userId)`, `saveFavourites(userId, favourites)`, and `clearFavourites(userId)`. Each user's favourites are stored separately. Corrupted JSON is handled gracefully (invalid entries are dropped, not the entire list). Hydration runs once after sign-in; subsequent writes are serialized through a save queue to handle rapid toggles correctly.
-- **User isolation.** Different authenticated users load and persist independent favourite lists. Logging out does not leak one user's favourites into another session. Favourites are preserved during logout unless the user explicitly clears local data.
-- **Removal policy.** Countries with no journal data are removed immediately. When journal notes and photos are introduced (Prompt 6), removal of countries with associated journal content will prompt for confirmation. Personal journal content is never silently deleted.
-- **Favourites screen.** Displays saved countries with flag, name, capital, region, and a remove action. Includes search over saved countries. Empty states for no favourites and no search results navigate to Explore or clear the search.
-- **Restart persistence.** Favourites saved before closing the app are restored on relaunch. The hydration step loads from AsyncStorage before the initial empty state can overwrite stored data.
-
-### Known limitations
-
-- Bucket-list status display and updates belong to Prompt 7. The `bucketStatus` field defaults to `want_to_visit` and is stored but not yet exposed in the UI.
-- Journal data association and confirmation-before-delete belong to Prompt 6. The removal helper is prepared but currently allows immediate removal for all countries.
+- Saved destinations are synchronized in Redux Toolkit (`favouritesSlice`) and persisted to AsyncStorage under user-scoped keys (`passport:favourites:<userId>`).
+- Cross-user data isolation ensures switching accounts preserves independent wishlists.
+- Removal policy safely handles immediate removal when no notes exist, with confirmation hooks reserved for journal integration.
 
 ## Checks
 
@@ -80,12 +130,11 @@ npm run test:ci
 
 For Android build verification, run `./gradlew :app:assembleDebug` from `android/` on macOS or Linux, or `./gradlew.bat :app:assembleDebug` from PowerShell on Windows.
 
-On an Android or iOS device, check sign-in, a cold restart, expired-session refresh, simulated registration, and logout followed by a cold restart. Verify keyboard layout, password visibility, color scheme, and back navigation with accessibility features enabled.
-
 ## Source layout
 
 - `src/app/` owns the Redux store and application lifecycle integration.
-- `src/features/` owns screens and state by feature.
-- `src/navigation/` owns typed routes and navigators.
-- `src/components/` and `src/theme/` contain reusable UI and appearance tokens.
-- `src/services/` contains the API, preference storage, and local photo persistence adapters.
+- `src/features/` owns screens, components, services, and state by feature.
+- `src/navigation/` owns typed routes and the custom floating bottom tab navigator.
+- `src/components/` contains reusable buttons, inputs, headers, and empty states.
+- `src/theme/` contains design tokens, light/dark themes, `ThemeProvider`, and `useAppTheme`.
+- `src/services/` contains API base queries, storage adapters, and photo persistence helpers.
