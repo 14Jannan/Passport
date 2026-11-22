@@ -40,7 +40,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: npm ci
       - name: Install Android SDK components
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "cmake;3.22.1"
+        shell: bash
+        run: |
+          shopt -s nullglob
+          sdkmanagers=("$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager)
+          "${sdkmanagers[0]:?Android SDK command-line tools are missing}" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006" "cmake;3.22.1"
       - name: Assemble Android debug APK
         working-directory: android
         run: ./gradlew :app:assembleDebug --no-daemon
