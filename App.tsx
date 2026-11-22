@@ -5,15 +5,18 @@ import { store } from './src/app/store';
 import { useQueryListeners } from './src/app/useQueryListeners';
 import { useSessionLifecycle } from './src/features/auth/hooks/useSessionLifecycle';
 import { RootNavigator } from './src/navigation/RootNavigator';
-import { useAppTheme } from './src/theme/theme';
+import { ThemeProvider, useAppTheme } from './src/theme/theme';
 
 function AppContent() {
   useQueryListeners();
   useSessionLifecycle();
-  const { dark } = useAppTheme();
+  const { dark, theme } = useAppTheme();
   return (
     <>
-      <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
+      <StatusBar
+        barStyle={dark ? 'light-content' : 'dark-content'}
+        backgroundColor={theme.colors.background}
+      />
       <RootNavigator />
     </>
   );
@@ -23,7 +26,9 @@ export default function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <AppContent />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </SafeAreaProvider>
     </Provider>
   );

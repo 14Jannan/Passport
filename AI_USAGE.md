@@ -6,7 +6,7 @@ AI assistance was used to inspect the existing React Native app, implement the c
 
 The development checks caught a malformed URL validation expression and a test mock that referenced an undeclared request parameter. Both were corrected before committing the catalog. The existing authentication smoke test was updated to assert the new Explore screen and to mock the auth and country responses separately.
 
-## Prompt 4 ? Country details
+## Prompt 4 — Country details
 
 AI assistance extended the existing RTK Query API and country normalization. A live endpoint check showed that the unfiltered alpha request returns an array and a field-filtered request returns an object. The adapter handles both shapes and validates the returned country code. Native Share behavior was checked against the React Native documentation before implementing quiet cancellation and explicit error feedback.
 
@@ -19,3 +19,13 @@ AI assistance was used to design and implement the favourites feature. Key decis
 - Hydration runs once per sign-in and uses a ref guard to prevent the initial empty Redux state from overwriting persisted data. Subsequent writes go through a serialized save queue so rapid toggles are persisted in the correct order.
 - The FavouriteButton component is shared between Explore cards and the Country Details header. Formatting fixes were applied to files from the Prompt 4 merge that had CRLF line endings.
 - The `bucketStatus` field and removal policy helpers are designed for forward compatibility with Bucket List (Prompt 7) and Journal (Prompt 6) features without implementing those features prematurely.
+
+## Prompt 5B — Complete Premium UI/UX Redesign & Persistent Themes
+
+AI assistance guided the complete visual redesign and theme architecture of Passport:
+
+- **Theme Architecture:** Designed centralized theme modules (`colors.ts`, `typography.ts`, `spacing.ts`, `radius.ts`, `shadows.ts`, `themes.ts`, `ThemeProvider.tsx`, and `useAppTheme.ts`). Configured exact color tokens for Light (`#F8F7F2` canvas, `#FFFFFF` cards, `#137C78` teal) and Dark (`#101B24` canvas, `#1C2A35` cards, `#38B5AA` cyan) modes.
+- **Appearance Persistence & Bonus Feature:** Implemented Light, Dark, and System appearance modes persisted in `AsyncStorage` (`@passport/preferences/appearance`). Documented persistent dark mode as the official assignment bonus feature. Subscribed to native `Appearance.addChangeListener` for live OS theme switching when in System mode.
+- **Destination Photography:** Curated a structured photography directory for 20+ top destination countries with Unsplash license attribution. Built `DestinationImage` with smooth loading fade-in and resilient fallback.
+- **Micro-Interactions & Floating Navigation:** Engineered spring bounce interactions on country cards and animated favourite toggle buttons using React Native's native-driven `Animated` API without heavy native animation dependencies. Created a floating bottom tab bar (`FloatingTabBar`) that respects device safe areas.
+- **Testing & Verification:** Authored unit and integration test suite (`__tests__/themeAndRedesign.test.tsx`) asserting light/dark/system mode selection, storage persistence, token resolution, appearance selector interactions, photography fallbacks, and favourite button animations. Verified zero regression on all 84 existing tests across 10 previous test suites.

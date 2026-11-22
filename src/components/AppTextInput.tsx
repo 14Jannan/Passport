@@ -29,9 +29,10 @@ export function AppTextInput({
   const [focused, setFocused] = useState(false);
   const { theme } = useAppTheme();
   const { colors } = theme;
+
   return (
     <View style={{ gap: theme.spacing.xs }}>
-      <Text nativeID={id} style={{ color: colors.text }}>
+      <Text nativeID={id} style={[styles.label, { color: colors.text }]}>
         {label}
       </Text>
       <View
@@ -43,9 +44,11 @@ export function AppTextInput({
               : focused
               ? colors.primary
               : colors.border,
+            borderWidth: focused || error ? 1.5 : 1,
             borderRadius: theme.radius.md,
             backgroundColor: colors.surface,
           },
+          theme.shadows.sm,
         ]}
       >
         <TextInput
@@ -75,7 +78,10 @@ export function AppTextInput({
         {endAccessory}
       </View>
       {error && (
-        <Text accessibilityLiveRegion="polite" style={{ color: colors.error }}>
+        <Text
+          accessibilityLiveRegion="polite"
+          style={[styles.errorText, { color: colors.error }]}
+        >
           {error}
         </Text>
       )}
@@ -84,6 +90,8 @@ export function AppTextInput({
 }
 
 const styles = StyleSheet.create({
-  frame: { borderWidth: 1, flexDirection: 'row', alignItems: 'center' },
-  input: { minHeight: 48, flex: 1 },
+  label: { fontSize: 14, fontWeight: '600' },
+  frame: { flexDirection: 'row', alignItems: 'center' },
+  input: { minHeight: 50, flex: 1 },
+  errorText: { fontSize: 13, marginTop: 2 },
 });

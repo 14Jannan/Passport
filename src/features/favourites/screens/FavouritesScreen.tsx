@@ -18,8 +18,8 @@ import { AppThemeOverride } from '../../../theme/theme';
 import { useGetCountriesQuery } from '../../countries/api/countriesApi';
 import { useCountryTheme } from '../../countries/countryTheme';
 import type { Country } from '../../countries/types';
-import { useFavourites } from '../hooks/useFavourites';
 import { FavouriteCountryCard } from '../components/FavouriteCountryCard';
+import { useFavourites } from '../hooks/useFavourites';
 
 function CardGap() {
   return <View style={styles.gap} />;
@@ -82,15 +82,25 @@ export function FavouritesScreen() {
         style={[
           styles.hero,
           { backgroundColor: tint, borderLeftColor: colors.accent },
+          theme.shadows.sm,
         ]}
       >
-        <AppHeader title="My Favourites" />
-        <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Your saved destinations
-        </Text>
-        <Text style={[styles.count, { color: strong }]}>
-          {count} {count === 1 ? 'country' : 'countries'} saved
-        </Text>
+        <View style={styles.heroTop}>
+          <View style={styles.heroTitles}>
+            <AppHeader title="My Favourites" />
+            <Text style={[styles.subtitle, { color: colors.muted }]}>
+              Your personal travel wishlist
+            </Text>
+          </View>
+          <View
+            style={[styles.countBadge, { backgroundColor: colors.primary }]}
+          >
+            <Feather name="bookmark" size={14} color={colors.onPrimary} />
+            <Text style={[styles.countText, { color: colors.onPrimary }]}>
+              {count}
+            </Text>
+          </View>
+        </View>
       </View>
 
       {error && (
@@ -114,13 +124,14 @@ export function FavouritesScreen() {
               borderColor: focused ? colors.primary : colors.border,
               backgroundColor: colors.surface,
             },
+            theme.shadows.sm,
           ]}
         >
           <View
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
           >
-            <Feather name="search" size={21} color={strong} />
+            <Feather name="search" size={20} color={strong} />
           </View>
           <TextInput
             accessibilityLabel="Search saved countries"
@@ -202,18 +213,42 @@ const styles = StyleSheet.create({
     maxWidth: 680,
     alignSelf: 'center',
     padding: 16,
-    paddingBottom: 24,
+    paddingBottom: 96,
   },
   headerBlock: { gap: 14, paddingBottom: 12 },
-  hero: { padding: 18, borderRadius: 16, borderLeftWidth: 3, gap: 5 },
+  hero: {
+    padding: 18,
+    borderRadius: 20,
+    borderLeftWidth: 4,
+  },
+  heroTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  heroTitles: {
+    flex: 1,
+    gap: 4,
+  },
   subtitle: { fontSize: 16 },
-  count: { fontSize: 14, fontWeight: '600' },
+  countBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  countText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   errorText: { flex: 1, fontSize: 14 },
   searchFrame: {
@@ -235,5 +270,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gap: { height: 10 },
+  gap: { height: 12 },
 });

@@ -1,5 +1,8 @@
 import { Feather } from '@react-native-vector-icons/feather/static';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+  createBottomTabNavigator,
+  type BottomTabBarProps,
+} from '@react-navigation/bottom-tabs';
 import {
   DarkTheme,
   DefaultTheme,
@@ -7,6 +10,8 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { ComponentProps } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSelector } from '../app/store';
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
 import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
@@ -28,26 +33,113 @@ const Auth = createNativeStackNavigator<AuthStackParams>();
 const Main = createNativeStackNavigator<MainStackParams>();
 const Tabs = createBottomTabNavigator<TabParams>();
 
-const icons: Record<keyof TabParams, ComponentProps<typeof Feather>['name']> = {
-  Discover: 'compass',
-  Saved: 'bookmark',
-  Journal: 'book-open',
-  Profile: 'user',
+const tabMeta: Record<
+  keyof TabParams,
+  { label: string; icon: ComponentProps<typeof Feather>['name'] }
+> = {
+  Discover: { label: 'Explore', icon: 'compass' },
+  Saved: { label: 'Favourites', icon: 'bookmark' },
+  Journal: { label: 'Journal', icon: 'book-open' },
+  Profile: { label: 'Profile', icon: 'user' },
 };
 
-function tabOptions({ route }: { route: { name: keyof TabParams } }) {
-  return {
-    tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-      <Feather name={icons[route.name]} color={color} size={size} />
-    ),
-  };
+function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { theme, dark } = useAppTheme();
+  const { colors } = theme;
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View
+      pointerEvents="box-none"
+      style={[
+        styles.floatingContainer,
+        { bottom: Math.max(insets.bottom, 12) },
+      ]}
+    >
+      <View
+        style={[
+          styles.tabBar,
+          {
+            backgroundColor: dark ? colors.surface : colors.surface,
+            borderColor: colors.border,
+          },
+          theme.shadows.floatingNav,
+        ]}
+      >
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
+          const { options } = descriptors[route.key];
+          const routeName = route.name as keyof TabParams;
+          const meta = tabMeta[routeName];
+          const label =
+            options.title !== undefined ? options.title : meta.label;
+
+          function onPress() {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          }
+
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={{ selected: isFocused }}
+              accessibilityLabel={label}
+              onPress={onPress}
+              style={styles.tabButton}
+            >
+              <View
+                style={[
+                  styles.iconWrap,
+                  isFocused && {
+                    backgroundColor: dark
+                      ? colors.surfaceSecondary
+                      : colors.softMint,
+                  },
+                ]}
+              >
+                <Feather
+                  name={meta.icon}
+                  size={20}
+                  color={isFocused ? colors.primary : colors.muted}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.tabLabel,
+                  {
+                    color: isFocused ? colors.primary : colors.muted,
+                    fontWeight: isFocused ? '700' : '500',
+                  },
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function renderFloatingTabBar(props: BottomTabBarProps) {
+  return <FloatingTabBar {...props} />;
 }
 
 function AppTabs() {
-  // Hydrate favourites for the authenticated user at the tab level.
   useFavourites();
   return (
-    <Tabs.Navigator screenOptions={tabOptions}>
+    <Tabs.Navigator
+      tabBar={renderFloatingTabBar}
+      screenOptions={{ headerShown: false }}
+    >
       <Tabs.Screen
         name="Discover"
         component={ExploreScreen}
@@ -68,9 +160,11 @@ export function RootNavigator() {
   const status = useAppSelector(state => state.session.status);
   const { dark, theme } = useAppTheme();
   const base = dark ? DarkTheme : DefaultTheme;
+
   if (status === 'starting' || status === 'checking') {
     return <SessionSplash />;
   }
+
   return (
     <NavigationContainer
       theme={{
@@ -87,7 +181,19 @@ export function RootNavigator() {
       }}
     >
       {status === 'signedIn' ? (
-        <Main.Navigator key="authenticated">
+        <Main.Navigator
+          key="authenticated"
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: theme.colors.surface,
+            },
+            headerTintColor: theme.colors.text,
+            headerTitleStyle: {
+              fontWeight: '700',
+            },
+            headerShadowVisible: false,
+          }}
+        >
           <Main.Screen
             name="Home"
             component={AppTabs}
@@ -110,7 +216,11 @@ export function RootNavigator() {
               title: route.params?.entryId ? 'Edit entry' : 'New entry',
             })}
           />
-          <Main.Screen name="Settings" component={SettingsScreen} />
+          <Main.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{ title: 'Settings' }}
+          />
         </Main.Navigator>
       ) : (
         <Auth.Navigator
@@ -124,3 +234,44 @@ export function RootNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  floatingContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    zIndex: 99,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    borderRadius: 28,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    width: '100%',
+    maxWidth: 500,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    minHeight: 48,
+    gap: 3,
+  },
+  iconWrap: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabLabel: {
+    fontSize: 11,
+    letterSpacing: 0.2,
+  },
+});

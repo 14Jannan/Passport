@@ -37,18 +37,23 @@ export function RegionFilterChips({
               Keyboard.dismiss();
               onChange(region);
             }}
-            style={[
+            style={({ pressed }) => [
               styles.chip,
               {
                 backgroundColor: selected ? colors.primary : colors.surface,
                 borderColor: selected ? colors.primary : colors.border,
+                opacity: pressed ? 0.8 : 1,
               },
+              theme.shadows.sm,
             ]}
           >
             <Text
               style={[
                 styles.text,
-                { color: selected ? colors.onPrimary : colors.text },
+                {
+                  color: selected ? colors.onPrimary : colors.text,
+                  fontWeight: selected ? '700' : '600',
+                },
               ]}
             >
               {region}
@@ -61,13 +66,14 @@ export function RegionFilterChips({
 }
 
 const styles = StyleSheet.create({
-  row: { gap: 8 },
+  row: { gap: 8, paddingVertical: 2 },
   chip: {
-    minHeight: 48,
-    borderRadius: 25,
-    borderWidth: StyleSheet.hairlineWidth,
+    minHeight: 44,
+    borderRadius: 22,
+    borderWidth: 1,
     justifyContent: 'center',
-    paddingHorizontal: 15,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
-  text: { fontWeight: '600', fontSize: 15 },
+  text: { fontSize: 14 },
 });

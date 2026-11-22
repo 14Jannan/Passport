@@ -11,17 +11,18 @@ import { AppThemeOverride } from '../../../theme/theme';
 import { useGetCountriesQuery } from '../api/countriesApi';
 import { CountryCard } from '../components/CountryCard';
 import { CountryListState } from '../components/CountryListState';
-import { useCountryTheme } from '../countryTheme';
 import { CountrySearchBar } from '../components/CountrySearchBar';
-import { RegionFilterChips } from '../components/RegionFilterChips';
 import { CountrySortModal } from '../components/CountrySortModal';
+import { FeaturedDestinationCard } from '../components/FeaturedDestinationCard';
+import { RegionFilterChips } from '../components/RegionFilterChips';
+import { useCountryTheme } from '../countryTheme';
 import { useDebouncedSearch } from '../hooks/useDebouncedSearch';
 import {
   defaultSort,
   filterCountries,
   sortCountries,
-  type Region,
   type CountrySort,
+  type Region,
 } from '../utils/discovery';
 
 function CardGap() {
@@ -31,11 +32,14 @@ function CardGap() {
 export function ExploreScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MainStackParams>>();
-  const firstName = useAppSelector(state =>
-    state.session.status === 'signedIn'
-      ? state.session.user.firstName.trim()
-      : '',
+  const user = useAppSelector(state =>
+    state.session.status === 'signedIn' ? state.session.user : null,
   );
+  const firstName = user?.firstName?.trim() ?? '';
+  const initials = `${user?.firstName?.[0] ?? ''}${
+    user?.lastName?.[0] ?? ''
+  }`.toUpperCase();
+
   const { theme, tint, strong } = useCountryTheme();
   const { colors } = theme;
   const network = useNetInfo();
@@ -50,11 +54,20 @@ export function ExploreScreen() {
   const search = useDebouncedSearch();
   const [region, setRegion] = useState<Region>('All');
   const [sort, setSort] = useState<CountrySort>(defaultSort);
+
   const countries = useMemo(
     () =>
       sortCountries(filterCountries(data ?? [], search.query, region), sort),
     [data, region, search.query, sort],
   );
+
+  // Pick a featured destination from the catalog (Japan or first available)
+  const featuredCountry = useMemo(() => {
+    if (!data || data.length === 0) {
+      return null;
+    }
+    return data.find(c => c.cca3 === 'JPN') ?? data[0];
+  }, [data]);
 
   function clearFilters() {
     search.change('');
@@ -67,27 +80,58 @@ export function ExploreScreen() {
     }
   }
 
+  const showFeatured = featuredCountry && region === 'All' && !search.query;
+
   const header = (
     <View style={styles.header}>
+      {/* Hero Welcome Header */}
       <View
         style={[
           styles.hero,
           { backgroundColor: tint, borderLeftColor: colors.accent },
         ]}
       >
-        {firstName ? (
-          <Text style={[styles.greeting, { color: strong }]}>
-            Hello, {firstName}
-          </Text>
-        ) : null}
-        <AppHeader title="Where to next?" />
-        <Text style={[styles.subtitle, { color: colors.muted }]}>
-          Discover your next destination
-        </Text>
+        <View style={styles.heroTopRow}>
+          <View style={styles.greetingContainer}>
+            {firstName ? (
+              <Text style={[styles.greeting, { color: strong }]}>
+                Hello, {firstName} 👋
+              </Text>
+            ) : null}
+            <AppHeader title="Where to next?" />
+            <Text style={[styles.subtitle, { color: colors.muted }]}>
+              Discover your next destination
+            </Text>
+          </View>
+          {initials ? (
+            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.avatarText, { color: colors.onPrimary }]}>
+                {initials}
+              </Text>
+            </View>
+          ) : null}
+        </View>
       </View>
+
+      {/* Featured Destination Hero Banner */}
+      {showFeatured ? (
+        <View style={styles.featuredSection}>
+          <FeaturedDestinationCard
+            country={featuredCountry}
+            onPress={() =>
+              navigation.navigate('CountryDetails', {
+                countryCode: featuredCountry.cca3,
+              })
+            }
+          />
+        </View>
+      ) : null}
+
+      {/* Search and Filters */}
       <CountrySearchBar value={search.text} onChange={search.change} />
       <RegionFilterChips value={region} onChange={setRegion} />
       <CountrySortModal value={sort} onChange={setSort} />
+
       {isError && data ? (
         <View style={styles.notice}>
           <Text accessibilityLiveRegion="polite" style={{ color: colors.text }}>
@@ -102,6 +146,7 @@ export function ExploreScreen() {
           />
         </View>
       ) : null}
+
       {data ? (
         <Text
           accessibilityLiveRegion="polite"
@@ -157,13 +202,42 @@ const styles = StyleSheet.create({
     maxWidth: 680,
     alignSelf: 'center',
     padding: 16,
-    paddingBottom: 24,
+    paddingBottom: 96, // Comfortable padding above floating bottom navigation
   },
   header: { gap: 14, paddingBottom: 12 },
-  hero: { padding: 18, borderRadius: 16, borderLeftWidth: 3, gap: 5 },
+  hero: {
+    padding: 18,
+    borderRadius: 20,
+    borderLeftWidth: 4,
+    gap: 5,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  greetingContainer: {
+    flex: 1,
+    gap: 4,
+  },
   greeting: { fontSize: 15, fontWeight: '700' },
   subtitle: { fontSize: 16 },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+  },
+  avatarText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  featuredSection: {
+    marginVertical: 4,
+  },
   notice: { gap: 8 },
-  count: { fontSize: 14, fontWeight: '600' },
-  gap: { height: 10 },
+  count: { fontSize: 14, fontWeight: '600', paddingHorizontal: 2 },
+  gap: { height: 12 },
 });
