@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState, type ReactNode, type Ref } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,39 +8,74 @@ import {
 } from 'react-native';
 import { useAppTheme } from '../theme/theme';
 
-type Props = TextInputProps & { label: string; error?: string };
+type Props = TextInputProps & {
+  label: string;
+  error?: string;
+  inputRef?: Ref<TextInput>;
+  endAccessory?: ReactNode;
+};
 
-export function AppTextInput({ label, error, style, ...props }: Props) {
+export function AppTextInput({
+  label,
+  error,
+  style,
+  inputRef,
+  endAccessory,
+  onFocus,
+  onBlur,
+  ...props
+}: Props) {
   const id = useId();
+  const [focused, setFocused] = useState(false);
   const { theme } = useAppTheme();
+  const { colors } = theme;
   return (
     <View style={{ gap: theme.spacing.xs }}>
-      <Text nativeID={id} style={{ color: theme.colors.text }}>
+      <Text nativeID={id} style={{ color: colors.text }}>
         {label}
       </Text>
-      <TextInput
-        {...props}
-        accessibilityLabel={label}
-        accessibilityLabelledBy={id}
-        placeholderTextColor={theme.colors.muted}
+      <View
         style={[
-          styles.input,
+          styles.frame,
           {
-            borderColor: error ? theme.colors.error : theme.colors.border,
+            borderColor: error
+              ? colors.error
+              : focused
+              ? colors.primary
+              : colors.border,
             borderRadius: theme.radius.md,
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            fontSize: theme.type.body,
-            paddingHorizontal: theme.spacing.md,
+            backgroundColor: colors.surface,
           },
-          style,
         ]}
-      />
+      >
+        <TextInput
+          {...props}
+          ref={inputRef}
+          accessibilityLabel={label}
+          accessibilityLabelledBy={id}
+          placeholderTextColor={colors.muted}
+          onFocus={event => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={event => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
+          style={[
+            styles.input,
+            {
+              color: colors.text,
+              fontSize: theme.type.body,
+              paddingHorizontal: theme.spacing.md,
+            },
+            style,
+          ]}
+        />
+        {endAccessory}
+      </View>
       {error && (
-        <Text
-          accessibilityLiveRegion="polite"
-          style={{ color: theme.colors.error }}
-        >
+        <Text accessibilityLiveRegion="polite" style={{ color: colors.error }}>
           {error}
         </Text>
       )}
@@ -48,4 +83,7 @@ export function AppTextInput({ label, error, style, ...props }: Props) {
   );
 }
 
-const styles = StyleSheet.create({ input: { minHeight: 48, borderWidth: 1 } });
+const styles = StyleSheet.create({
+  frame: { borderWidth: 1, flexDirection: 'row', alignItems: 'center' },
+  input: { minHeight: 48, flex: 1 },
+});

@@ -1,10 +1,8 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type AuthStackParams = {
-  Welcome: undefined;
-  SignIn: undefined;
+  SignIn: { registered?: boolean } | undefined;
   Register: undefined;
-  ForgotPassword: undefined;
 };
 
 export type TabParams = {

@@ -5,6 +5,8 @@ import { api } from '../services/api';
 
 export function createAppStore() {
   return configureStore({
+    // RTK Query mutation actions carry transient request arguments.
+    devTools: false,
     reducer: { session: sessionReducer, [api.reducerPath]: api.reducer },
     middleware: getDefaultMiddleware =>
       getDefaultMiddleware().concat(api.middleware),

@@ -13,6 +13,7 @@
     "test:ci": "jest --ci --runInBand"
   },
   "dependencies": {
+    "@hookform/resolvers": "5.9.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "11.5.2",
     "@react-native-vector-icons/feather": "14.0.0",
@@ -28,10 +29,12 @@
     "react-native-keychain": "10.0.0",
     "react-native-safe-area-context": "5.11.1",
     "react-native-screens": "4.30.1",
-    "react-redux": "9.3.1"
+    "react-redux": "9.3.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@babel/plugin-transform-export-namespace-from": "7.29.15",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
     "@react-native-community/cli": "20.1.0",
@@ -42,6 +45,7 @@
     "@react-native/jest-preset": "0.86.3",
     "@react-native/metro-config": "0.86.3",
     "@react-native/typescript-config": "0.86.3",
+    "@testing-library/react-native": "13.3.3",
     "@types/jest": "^29.5.13",
     "@types/react": "^19.2.0",
     "@types/react-test-renderer": "^19.1.0",

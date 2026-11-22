@@ -8,12 +8,8 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { ComponentProps } from 'react';
 import { useAppSelector } from '../app/store';
-import {
-  ForgotPasswordScreen,
-  RegisterScreen,
-  SignInScreen,
-  WelcomeScreen,
-} from '../features/auth/screens';
+import { LoginScreen } from '../features/auth/screens/LoginScreen';
+import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
 import {
   DestinationDetailsScreen,
   DiscoverScreen,
@@ -51,8 +47,16 @@ function tabOptions({ route }: { route: { name: keyof TabParams } }) {
 function AppTabs() {
   return (
     <Tabs.Navigator screenOptions={tabOptions}>
-      <Tabs.Screen name="Discover" component={DiscoverScreen} />
-      <Tabs.Screen name="Saved" component={SavedScreen} />
+      <Tabs.Screen
+        name="Discover"
+        component={DiscoverScreen}
+        options={{ title: 'Explore' }}
+      />
+      <Tabs.Screen
+        name="Saved"
+        component={SavedScreen}
+        options={{ title: 'Favourites' }}
+      />
       <Tabs.Screen name="Journal" component={JournalScreen} />
       <Tabs.Screen name="Profile" component={ProfileScreen} />
     </Tabs.Navigator>
@@ -60,7 +64,7 @@ function AppTabs() {
 }
 
 export function RootNavigator() {
-  const isGuest = useAppSelector(state => state.session.isGuest);
+  const signedIn = useAppSelector(state => state.session.status === 'signedIn');
   const { dark, theme } = useAppTheme();
   const base = dark ? DarkTheme : DefaultTheme;
   return (
@@ -78,8 +82,8 @@ export function RootNavigator() {
         },
       }}
     >
-      {isGuest ? (
-        <Main.Navigator>
+      {signedIn ? (
+        <Main.Navigator key="authenticated">
           <Main.Screen
             name="Home"
             component={AppTabs}
@@ -106,27 +110,12 @@ export function RootNavigator() {
           <Main.Screen name="Settings" component={SettingsScreen} />
         </Main.Navigator>
       ) : (
-        <Auth.Navigator>
-          <Auth.Screen
-            name="Welcome"
-            component={WelcomeScreen}
-            options={{ title: 'Passport' }}
-          />
-          <Auth.Screen
-            name="SignIn"
-            component={SignInScreen}
-            options={{ title: 'Sign in' }}
-          />
-          <Auth.Screen
-            name="Register"
-            component={RegisterScreen}
-            options={{ title: 'Create account' }}
-          />
-          <Auth.Screen
-            name="ForgotPassword"
-            component={ForgotPasswordScreen}
-            options={{ title: 'Reset password' }}
-          />
+        <Auth.Navigator
+          key="authentication"
+          screenOptions={{ headerShown: false }}
+        >
+          <Auth.Screen name="SignIn" component={LoginScreen} />
+          <Auth.Screen name="Register" component={RegisterScreen} />
         </Auth.Navigator>
       )}
     </NavigationContainer>
