@@ -1,0 +1,31 @@
+import { Pressable, StyleSheet, Text } from 'react-native';
+import { useAppTheme } from '../theme/theme';
+
+type Props = { label: string; onPress: () => void; disabled?: boolean };
+
+export function AppButton({ label, onPress, disabled = false }: Props) {
+  const { theme } = useAppTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 48,
+        padding: theme.spacing.md,
+        borderRadius: theme.radius.md,
+        backgroundColor: theme.colors.primary,
+        opacity: disabled || pressed ? 0.65 : 1,
+      })}
+    >
+      <Text style={[styles.label, { color: theme.colors.onPrimary }]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({ label: { fontWeight: '600' } });
