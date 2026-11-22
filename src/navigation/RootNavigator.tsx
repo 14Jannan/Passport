@@ -10,6 +10,7 @@ import type { ComponentProps } from 'react';
 import { useAppSelector } from '../app/store';
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
 import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
+import { SessionSplash } from '../features/auth/screens/SessionSplash';
 import {
   DestinationDetailsScreen,
   DiscoverScreen,
@@ -64,9 +65,12 @@ function AppTabs() {
 }
 
 export function RootNavigator() {
-  const signedIn = useAppSelector(state => state.session.status === 'signedIn');
+  const status = useAppSelector(state => state.session.status);
   const { dark, theme } = useAppTheme();
   const base = dark ? DarkTheme : DefaultTheme;
+  if (status === 'starting' || status === 'checking') {
+    return <SessionSplash />;
+  }
   return (
     <NavigationContainer
       theme={{
@@ -82,7 +86,7 @@ export function RootNavigator() {
         },
       }}
     >
-      {signedIn ? (
+      {status === 'signedIn' ? (
         <Main.Navigator key="authenticated">
           <Main.Screen
             name="Home"

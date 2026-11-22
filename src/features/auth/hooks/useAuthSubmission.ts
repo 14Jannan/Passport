@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { authErrorMessage } from '../api/authApi';
+import { SessionWriteError } from '../services/authStorage';
 
 export function useAuthSubmission(operation: 'login' | 'register') {
   const lock = useRef(false);
@@ -16,7 +17,11 @@ export function useAuthSubmission(operation: 'login' | 'register') {
     try {
       await request();
     } catch (failure) {
-      setError(authErrorMessage(failure, operation));
+      setError(
+        failure instanceof SessionWriteError
+          ? failure.message
+          : authErrorMessage(failure, operation),
+      );
     } finally {
       lock.current = false;
       setPending(false);

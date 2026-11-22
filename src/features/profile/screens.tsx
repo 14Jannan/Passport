@@ -8,7 +8,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { ScreenLayout } from '../../components/ScreenLayout';
 import type { MainStackParams } from '../../navigation/types';
 import { useAppTheme } from '../../theme/theme';
-import { leaveSession } from '../auth/session';
+import { logoutSession } from '../auth/services/sessionActions';
 
 export function ProfileScreen() {
   const navigation =
@@ -39,7 +39,7 @@ export function ProfileScreen() {
         title="Travel statistics"
         description="Travel statistics will appear in a future update."
       />
-      <AppButton label="Log out" onPress={() => dispatch(leaveSession())} />
+      <AppButton label="Log out" onPress={() => dispatch(logoutSession())} />
     </ScreenLayout>
   );
 }

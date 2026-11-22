@@ -5,6 +5,7 @@ export function LoadingView({ label = 'Loading…' }: { label?: string }) {
   const { theme } = useAppTheme();
   return (
     <View
+      accessible
       accessibilityRole="progressbar"
       accessibilityState={{ busy: true }}
       accessibilityLabel={label}

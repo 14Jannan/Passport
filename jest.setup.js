@@ -10,3 +10,14 @@ jest.mock(
   'react-native-safe-area-context',
   () => require('react-native-safe-area-context/jest/mock').default,
 );
+jest.mock('react-native-keychain', () => ({
+  ACCESSIBLE: { WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'WhenUnlockedThisDeviceOnly' },
+  STORAGE_TYPE: { AES_GCM_NO_AUTH: 'KeystoreAESGCM_NoAuth' },
+  setGenericPassword: jest.fn().mockResolvedValue({
+    service: 'com.passport.session',
+    storage: 'KeystoreAESGCM_NoAuth',
+  }),
+  getGenericPassword: jest.fn().mockResolvedValue(false),
+  resetGenericPassword: jest.fn().mockResolvedValue(true),
+  hasGenericPassword: jest.fn().mockResolvedValue(false),
+}));

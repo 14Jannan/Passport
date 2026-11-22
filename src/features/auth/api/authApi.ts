@@ -65,6 +65,29 @@ export const authApi = api.injectEndpoints({
         );
       },
     }),
+    currentUser: build.mutation<AuthUser, string>({
+      async queryFn(accessToken, _api, _options, baseQuery) {
+        return parseResponse(
+          await baseQuery({
+            url: 'auth/me',
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }),
+          profileSchema,
+        );
+      },
+    }),
+    refresh: build.mutation<AuthTokens, string>({
+      async queryFn(refreshToken, _api, _options, baseQuery) {
+        return parseResponse(
+          await baseQuery({
+            url: 'auth/refresh',
+            method: 'POST',
+            body: { refreshToken, expiresInMins: sessionDurationMinutes },
+          }),
+          tokensSchema,
+        );
+      },
+    }),
     register: build.mutation<{ id: number }, RegistrationRequest>({
       async queryFn({ fullName, ...fields }, _api, _options, baseQuery) {
         const [firstName, ...remaining] = fullName.split(/\s+/);

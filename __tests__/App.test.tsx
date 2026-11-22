@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import * as Keychain from 'react-native-keychain';
 import App from '../App';
 
 it('opens the protected experience after a successful login and signs out from Profile', async () => {
@@ -18,6 +19,7 @@ it('opens the protected experience after a successful login and signs out from P
 
   try {
     render(<App />);
+    expect(screen.getByRole('progressbar')).toBeOnTheScreen();
     expect(screen.queryByText('Find a place for your next trip.')).toBeNull();
     fireEvent.press(
       await screen.findByRole('button', { name: 'Use demo credentials' }),
@@ -26,11 +28,13 @@ it('opens the protected experience after a successful login and signs out from P
     expect(
       await screen.findByText('Find a place for your next trip.'),
     ).toBeOnTheScreen();
+    expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByText('Profile'));
     expect(await screen.findByText('Emily Johnson')).toBeOnTheScreen();
     fireEvent.press(screen.getByRole('button', { name: 'Log out' }));
     expect(await screen.findByText('Welcome back')).toBeOnTheScreen();
     expect(screen.queryByText('Emily Johnson')).toBeNull();
+    expect(Keychain.resetGenericPassword).toHaveBeenCalledTimes(1);
   } finally {
     fetch.mockRestore();
   }
