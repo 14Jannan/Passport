@@ -152,7 +152,8 @@ export function CountryDetailsContent({
         <View style={styles.planningRow}>
           <Feather name="heart" size={19} color={strong} />
           <DetailText>
-            Favourites and bucket-list status are coming in a later update.
+            Save this country to your favourites from the header or the Explore
+            screen.
           </DetailText>
         </View>
         <View style={styles.planningRow}>

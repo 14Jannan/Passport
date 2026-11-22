@@ -1,6 +1,7 @@
 import { Feather } from '@react-native-vector-icons/feather/static';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FavouriteButton } from '../../favourites/components/FavouriteButton';
 import { useCountryTheme } from '../countryTheme';
 import type { Country } from '../types';
 
@@ -84,12 +85,7 @@ export function CountryCard({
           {population !== null ? ` · ${population} people` : ''}
         </Text>
       </View>
-      <View
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <Feather name="bookmark" size={17} color={colors.muted} />
-      </View>
+      <FavouriteButton countryCode={country.cca3} size={17} />
       <Feather name="chevron-right" size={21} color={strong} />
     </Pressable>
   );

@@ -1,6 +1,7 @@
 import { Feather } from '@react-native-vector-icons/feather/static';
 import { useRef, useState } from 'react';
 import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
+import { FavouriteButton } from '../../favourites/components/FavouriteButton';
 import { useCountryTheme } from '../countryTheme';
 import type { Country } from '../types';
 import { buildCountryShare } from '../utils/countryShare';
@@ -53,18 +54,9 @@ export function ShareCountryButton({ country }: { country: Country }) {
 }
 
 export function CountryDetailsActions({ country }: { country: Country }) {
-  const { theme } = useCountryTheme();
   return (
     <View style={styles.row}>
-      <View
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel="Favourites coming soon"
-        accessibilityState={{ disabled: true }}
-        style={styles.action}
-      >
-        <Feather name="heart" size={21} color={theme.colors.muted} />
-      </View>
+      <FavouriteButton countryCode={country.cca3} />
       <ShareCountryButton country={country} />
     </View>
   );
