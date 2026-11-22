@@ -1,6 +1,6 @@
 import { skipToken } from '@reduxjs/toolkit/query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useLayoutEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
 import { EmptyState } from '../../../components/EmptyState';
@@ -8,6 +8,7 @@ import { ScreenLayout } from '../../../components/ScreenLayout';
 import type { MainStackParams } from '../../../navigation/types';
 import { AppThemeOverride } from '../../../theme/theme';
 import { useGetCountryDetailsQuery } from '../api/countriesApi';
+import { CountryDetailsActions } from '../components/CountryDetailsActions';
 import { CountryDetailsContent } from '../components/CountryDetailsContent';
 import { useCountryTheme } from '../countryTheme';
 import { normalizeCountryCode } from '../utils/countryDetails';
@@ -28,9 +29,16 @@ export function CountryDetailsScreen({
   });
   const title = country?.commonName ?? 'Country details';
 
+  const headerRight = useCallback(
+    () =>
+      country ? (
+        <CountryDetailsActions key={country.cca3} country={country} />
+      ) : null,
+    [country],
+  );
   useLayoutEffect(() => {
-    navigation.setOptions({ title });
-  }, [navigation, title]);
+    navigation.setOptions({ title, headerRight });
+  }, [navigation, title, headerRight]);
 
   return (
     <AppThemeOverride.Provider value={theme}>
