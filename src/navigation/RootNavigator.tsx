@@ -13,6 +13,7 @@ import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
 import { SessionSplash } from '../features/auth/screens/SessionSplash';
 import { CountryDetailsScreen } from '../features/countries/screens/CountryDetailsScreen';
 import { ExploreScreen } from '../features/countries/screens/ExploreScreen';
+import { useFavourites } from '../features/favourites/hooks/useFavourites';
 import {
   EditJournalEntryScreen,
   JournalEntryScreen,
@@ -43,6 +44,8 @@ function tabOptions({ route }: { route: { name: keyof TabParams } }) {
 }
 
 function AppTabs() {
+  // Hydrate favourites for the authenticated user at the tab level.
+  useFavourites();
   return (
     <Tabs.Navigator screenOptions={tabOptions}>
       <Tabs.Screen

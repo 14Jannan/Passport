@@ -30,7 +30,7 @@ On the login screen, select **Use demo credentials**, then select **Sign in**. T
 | Protected tabs | Explore, Favourites, Journal, Profile                    |
 | Stack screens  | Country details, Journal entry, New/edit entry, Settings |
 
-DummyJSON is a public mock service. Logout is local and does not revoke tokens on the service. Travel statistics, saved destinations, and journal editing retain their foundation placeholders.
+DummyJSON is a public mock service. Logout is local and does not revoke tokens on the service. Travel statistics and journal editing retain their foundation placeholders.
 
 ## Explore countries
 
@@ -40,7 +40,7 @@ Explore fetches countries from the public [Countrydrop v3.1 compatibility API](h
 - Search trims input and matches partial common or official names case-insensitively after a 300 ms debounce. Region chips update immediately. The Antarctica chip also matches the API value `Antarctic`.
 - A memoized result applies search and filtering before sorting a copy. Country names use locale-aware comparison. Numeric ties use name and then country code, and missing numeric values sort last in either direction.
 - All three controls operate on cached data to keep interaction responsive and avoid refetching for each edit. Initial loads show skeleton cards. Pull-to-refresh and reconnect can request fresh data. Failed refreshes preserve the last in-memory results and offer retry. A cold start without connectivity requires a network connection to load the catalog.
-- Flags use PNG URLs from the response with a visual fallback when an image is missing or fails. Cards navigate using only the ISO alpha-3 code. The bookmark icon is a placeholder.
+- Flags use PNG URLs from the response with a visual fallback when an image is missing or fails. Cards navigate using only the ISO alpha-3 code. Each card includes a heart button to toggle favourite status.
 
 ## Country details
 
@@ -51,6 +51,22 @@ Country Details shows flags, official names, capital, population, area, geograph
 The header Share action uses React Native Share to send the country name, capital, region, and the public country endpoint as plain text. Dismissal is quiet and native failures show a retryable message. Android reports a resolved share dialog without identifying cancellation. [React Native Share documentation](https://reactnative.dev/docs/0.86/share)
 
 Favourites, comparison, bucket-list status, and journal actions are reserved for later prompts. They have no active buttons that lead to placeholders.
+
+## Favourites
+
+Users save countries from Explore or Country Details using a reusable FavouriteButton. The same Redux Toolkit slice drives favourite state across every screen. Favourites persist across app restarts through AsyncStorage using user-scoped keys (`passport:favourites:<userId>`).
+
+- **Redux Toolkit implementation.** A `favouritesSlice` manages `addFavourite`, `removeFavourite`, `toggleFavourite`, `updateFavourite`, and `hydrateFavourites` actions. Typed selectors (`selectAllFavourites`, `selectIsFavourite`, `selectFavouriteCount`) keep all screens in sync through a single source of truth.
+- **AsyncStorage persistence.** `favouritesStorage.ts` provides `loadFavourites(userId)`, `saveFavourites(userId, favourites)`, and `clearFavourites(userId)`. Each user's favourites are stored separately. Corrupted JSON is handled gracefully (invalid entries are dropped, not the entire list). Hydration runs once after sign-in; subsequent writes are serialized through a save queue to handle rapid toggles correctly.
+- **User isolation.** Different authenticated users load and persist independent favourite lists. Logging out does not leak one user's favourites into another session. Favourites are preserved during logout unless the user explicitly clears local data.
+- **Removal policy.** Countries with no journal data are removed immediately. When journal notes and photos are introduced (Prompt 6), removal of countries with associated journal content will prompt for confirmation. Personal journal content is never silently deleted.
+- **Favourites screen.** Displays saved countries with flag, name, capital, region, and a remove action. Includes search over saved countries. Empty states for no favourites and no search results navigate to Explore or clear the search.
+- **Restart persistence.** Favourites saved before closing the app are restored on relaunch. The hydration step loads from AsyncStorage before the initial empty state can overwrite stored data.
+
+### Known limitations
+
+- Bucket-list status display and updates belong to Prompt 7. The `bucketStatus` field defaults to `want_to_visit` and is stored but not yet exposed in the UI.
+- Journal data association and confirmation-before-delete belong to Prompt 6. The removal helper is prepared but currently allows immediate removal for all countries.
 
 ## Checks
 
