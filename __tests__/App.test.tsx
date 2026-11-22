@@ -7,6 +7,8 @@ import {
 } from '@testing-library/react-native';
 import * as Keychain from 'react-native-keychain';
 import App from '../App';
+import { CountryDetailsScreen } from '../src/features/countries/screens/CountryDetailsScreen';
+import { japanDetails } from '../test-fixtures/countryDetails';
 import { countryRecords } from '../test-fixtures/countries';
 
 configure({ asyncUtilTimeout: 5000 });
@@ -26,6 +28,9 @@ it('opens the protected experience after a successful login and signs out from P
           request instanceof Request &&
             new URL(request.url).pathname === '/v3.1/all'
             ? countryRecords
+            : request instanceof Request &&
+              new URL(request.url).pathname === '/v3.1/alpha/JPN'
+            ? japanDetails
             : {
                 id: 1,
                 username: 'emilys',
@@ -50,6 +55,30 @@ it('opens the protected experience after a successful login and signs out from P
     expect(await screen.findByText('Where to next?')).toBeOnTheScreen();
     expect(await screen.findByText('Sri Lanka')).toBeOnTheScreen();
     expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
+    fireEvent.press(screen.getByRole('button', { name: 'Asia region' }));
+    fireEvent.changeText(screen.getByLabelText('Search countries'), 'Japan');
+    expect(await screen.findByText('1 country')).toBeOnTheScreen();
+    fireEvent.press(screen.getByRole('button', { name: /Sort: Name/ }));
+    fireEvent.press(screen.getByRole('radio', { name: /Area High/ }));
+    fireEvent.press(screen.getByRole('button', { name: 'Japan, Tokyo, Asia' }));
+    expect(await screen.findByText('Japanese')).toBeOnTheScreen();
+    const details = screen.UNSAFE_getByType(CountryDetailsScreen).props;
+    expect(details.route.params).toEqual({ countryCode: 'JPN' });
+    expect(
+      fetch.mock.calls.some(
+        ([request]) =>
+          request instanceof Request &&
+          new URL(request.url).pathname === '/v3.1/alpha/JPN',
+      ),
+    ).toBe(true);
+    await act(async () => details.navigation.goBack());
+    expect(screen.getByLabelText('Search countries')).toHaveDisplayValue(
+      'Japan',
+    );
+    expect(screen.getByRole('button', { name: 'Asia region' })).toBeSelected();
+    expect(
+      screen.getByRole('button', { name: /Sort: Area High/ }),
+    ).toBeOnTheScreen();
     fireEvent.press(screen.getByText('Profile'));
     expect(await screen.findByText('Emily Johnson')).toBeOnTheScreen();
     fireEvent.press(screen.getByRole('button', { name: 'Log out' }));

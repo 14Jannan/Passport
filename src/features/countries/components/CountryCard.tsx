@@ -9,7 +9,13 @@ const compactPopulation = new Intl.NumberFormat('en', {
   maximumFractionDigits: 1,
 });
 
-export function CountryFlag({ country }: { country: Country }) {
+export function CountryFlag({
+  country,
+  large = false,
+}: {
+  country: Country;
+  large?: boolean;
+}) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const { theme, tint, strong } = useCountryTheme();
   const { flagUrl, flagAlt, commonName } = country;
@@ -17,6 +23,7 @@ export function CountryFlag({ country }: { country: Country }) {
     <View
       style={[
         styles.flag,
+        large && styles.heroFlag,
         { backgroundColor: tint, borderColor: theme.colors.border },
       ]}
     >
@@ -30,7 +37,7 @@ export function CountryFlag({ country }: { country: Country }) {
           onError={() => setFailedUrl(flagUrl)}
         />
       ) : (
-        <Feather name="flag" size={23} color={strong} />
+        <Feather name="flag" size={large ? 48 : 23} color={strong} />
       )}
     </View>
   );
@@ -109,6 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  heroFlag: { width: '100%', height: 180 },
   image: { width: '100%', height: '100%' },
   copy: { flex: 1, gap: 3 },
   title: { fontSize: 17, fontWeight: '700' },
