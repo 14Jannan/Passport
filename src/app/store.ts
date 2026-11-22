@@ -5,13 +5,18 @@ import {
 } from '@reduxjs/toolkit';
 import { useDispatch, useSelector } from 'react-redux';
 import { sessionReducer } from '../features/auth/session';
+import { favouritesReducer } from '../features/favourites/store/favouritesSlice';
 import { api } from '../services/api';
 
 export function createAppStore() {
   return configureStore({
     // RTK Query mutation actions carry transient request arguments.
     devTools: false,
-    reducer: { session: sessionReducer, [api.reducerPath]: api.reducer },
+    reducer: {
+      session: sessionReducer,
+      favourites: favouritesReducer,
+      [api.reducerPath]: api.reducer,
+    },
     middleware: getDefaultMiddleware =>
       getDefaultMiddleware().concat(api.middleware),
   });
