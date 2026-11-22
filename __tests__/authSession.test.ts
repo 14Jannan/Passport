@@ -34,8 +34,15 @@ function setSavedSession(expiresAt = session.expiresAt) {
   });
 }
 
-beforeEach(() => jest.clearAllMocks());
-afterEach(() => jest.restoreAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.useFakeTimers();
+});
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 it('moves from startup through checking to sign-in and sign-out without storing tokens', () => {
   const starting = sessionReducer(undefined, { type: 'init' });

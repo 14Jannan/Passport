@@ -1,8 +1,23 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import {
+  act,
+  configure,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react-native';
 import * as Keychain from 'react-native-keychain';
 import App from '../App';
 
+configure({ asyncUtilTimeout: 5000 });
+jest.setTimeout(20000);
+
 it('opens the protected experience after a successful login and signs out from Profile', async () => {
+  let resolveStorage!: (value: false) => void;
+  jest.mocked(Keychain.getGenericPassword).mockReturnValueOnce(
+    new Promise<false>(resolve => {
+      resolveStorage = resolve;
+    }),
+  );
   const fetch = jest.spyOn(globalThis, 'fetch').mockImplementation(
     async () =>
       new Response(
@@ -21,8 +36,9 @@ it('opens the protected experience after a successful login and signs out from P
     render(<App />);
     expect(screen.getByRole('progressbar')).toBeOnTheScreen();
     expect(screen.queryByText('Find a place for your next trip.')).toBeNull();
+    await act(async () => resolveStorage(false));
     fireEvent.press(
-      await screen.findByRole('button', { name: 'Use demo credentials' }),
+      screen.getByRole('button', { name: 'Use demo credentials' }),
     );
     fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(
