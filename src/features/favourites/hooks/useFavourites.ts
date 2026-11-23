@@ -9,32 +9,31 @@ import {
 } from '../store/favouritesSlice';
 import {
   selectAllFavourites,
+  selectCountryBucketStatus,
   selectFavouritesHydrated,
   selectIsFavourite,
   selectFavouriteCount,
   selectFavouritesError,
 } from '../store/favouritesSelectors';
+import type { BucketStatus } from '../types/favourite.types';
 
 /**
- * Core favourites hook that handles hydration and persistence.
+ * Hydrates favourites for the signed-in user and persists every change.
  *
- * Call once at the app level (e.g. in the navigator or a provider) to hydrate
- * favourites for the authenticated user. Subsequent calls reuse the same
- * Redux state without re-triggering hydration.
+ * Mount exactly once inside the authenticated navigator so there is a single
+ * writer for the user's favourites key.
  */
-export function useFavourites() {
+export function useFavouritesSync() {
   const dispatch = useAppDispatch();
-  const session = useAppSelector(state => state.session);
   const favourites = useAppSelector(selectAllFavourites);
   const hydrated = useAppSelector(selectFavouritesHydrated);
-  const count = useAppSelector(selectFavouriteCount);
-  const error = useAppSelector(selectFavouritesError);
-  const userId = session.status === 'signedIn' ? session.user.id : null;
+  const userId = useAppSelector(state =>
+    state.session.status === 'signedIn' ? state.session.user.id : null,
+  );
 
-  // Track a serialization queue to ensure rapid toggles persist correctly.
+  // Serialize writes so rapid toggles are persisted in order.
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
 
-  // Hydrate favourites when the authenticated user changes.
   useEffect(() => {
     if (userId === null) {
       return;
@@ -62,13 +61,12 @@ export function useFavourites() {
     };
   }, [dispatch, userId]);
 
-  // Persist favourites whenever the list changes after hydration.
   const prevFavourites = useRef(favourites);
   useEffect(() => {
     if (!hydrated || userId === null) {
       return;
     }
-    // Skip the first render after hydration (the data just came from storage).
+    // Skip the render right after hydration (the data came from storage).
     if (prevFavourites.current === favourites) {
       return;
     }
@@ -85,6 +83,15 @@ export function useFavourites() {
         );
       });
   }, [dispatch, favourites, hydrated, userId]);
+}
+
+/** Read favourites state and basic actions. Has no side effects. */
+export function useFavourites() {
+  const dispatch = useAppDispatch();
+  const favourites = useAppSelector(selectAllFavourites);
+  const hydrated = useAppSelector(selectFavouritesHydrated);
+  const count = useAppSelector(selectFavouriteCount);
+  const error = useAppSelector(selectFavouritesError);
 
   const toggle = useCallback(
     (countryCode: string) => {
@@ -118,4 +125,9 @@ export function useFavourites() {
 /** Convenience hook to check whether a single country is saved. */
 export function useIsFavourite(countryCode: string): boolean {
   return useAppSelector(state => selectIsFavourite(state, countryCode));
+}
+
+/** The bucket status of a country, or null when it is not saved. */
+export function useBucketStatus(countryCode: string): BucketStatus | null {
+  return useAppSelector(state => selectCountryBucketStatus(state, countryCode));
 }

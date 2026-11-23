@@ -18,7 +18,7 @@ import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
 import { SessionSplash } from '../features/auth/screens/SessionSplash';
 import { CountryDetailsScreen } from '../features/countries/screens/CountryDetailsScreen';
 import { ExploreScreen } from '../features/countries/screens/ExploreScreen';
-import { useFavourites } from '../features/favourites/hooks/useFavourites';
+import { useFavouritesSync } from '../features/favourites/hooks/useFavourites';
 import { useJournalHydration } from '../features/journal/hooks/useJournal';
 import { JournalEditorScreen } from '../features/journal/screens/JournalEditorScreen';
 import { JournalScreen } from '../features/journal/screens/JournalScreen';
@@ -168,7 +168,7 @@ function renderFloatingTabBar(props: BottomTabBarProps) {
 }
 
 function AppTabs() {
-  useFavourites();
+  useFavouritesSync();
   useJournalHydration();
   return (
     <Tabs.Navigator

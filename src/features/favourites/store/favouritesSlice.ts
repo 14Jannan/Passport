@@ -1,5 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { BucketStatus, FavouriteCountry } from '../types/favourite.types';
+import {
+  DEFAULT_BUCKET_STATUS,
+  type BucketStatus,
+  type FavouriteCountry,
+} from '../types/favourite.types';
 
 export interface FavouritesState {
   /** Ordered list of saved countries. */
@@ -42,7 +46,7 @@ const favouritesSlice = createSlice({
       state.items.push({
         countryCode,
         savedAt,
-        bucketStatus: 'want_to_visit',
+        bucketStatus: DEFAULT_BUCKET_STATUS,
       });
       state.error = null;
     },
@@ -69,14 +73,17 @@ const favouritesSlice = createSlice({
         state.items.push({
           countryCode,
           savedAt,
-          bucketStatus: 'want_to_visit',
+          bucketStatus: DEFAULT_BUCKET_STATUS,
         });
       }
       state.error = null;
     },
 
-    /** Update the bucket status of a saved country. */
-    updateFavourite(
+    /**
+     * Set the bucket-list status of a saved country. Unsaved countries are
+     * ignored so a status can never exist without its favourite.
+     */
+    updateBucketStatus(
       state,
       action: PayloadAction<{
         countryCode: string;
@@ -107,7 +114,7 @@ export const {
   addFavourite,
   removeFavourite,
   toggleFavourite,
-  updateFavourite,
+  updateBucketStatus,
   setFavouritesError,
   clearFavouritesError,
 } = favouritesSlice.actions;
