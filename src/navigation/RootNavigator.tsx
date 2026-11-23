@@ -9,8 +9,8 @@ import {
   NavigationContainer,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import type { ComponentProps } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, type ComponentProps } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSelector } from '../app/store';
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
@@ -19,13 +19,12 @@ import { SessionSplash } from '../features/auth/screens/SessionSplash';
 import { CountryDetailsScreen } from '../features/countries/screens/CountryDetailsScreen';
 import { ExploreScreen } from '../features/countries/screens/ExploreScreen';
 import { useFavourites } from '../features/favourites/hooks/useFavourites';
-import {
-  EditJournalEntryScreen,
-  JournalEntryScreen,
-  JournalScreen,
-} from '../features/journal/screens';
+import { useJournalHydration } from '../features/journal/hooks/useJournal';
+import { JournalEditorScreen } from '../features/journal/screens/JournalEditorScreen';
+import { JournalScreen } from '../features/journal/screens/JournalScreen';
 import { ProfileScreen, SettingsScreen } from '../features/profile/screens';
 import { SavedScreen } from '../features/saved/screens';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useAppTheme } from '../theme/theme';
 import type { AuthStackParams, MainStackParams, TabParams } from './types';
 
@@ -43,8 +42,58 @@ const tabMeta: Record<
   Profile: { label: 'Profile', icon: 'user' },
 };
 
-function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+/** Tab icon that pops and gains a tinted pill when its tab is focused. */
+function TabIcon({
+  icon,
+  focused,
+}: {
+  icon: ComponentProps<typeof Feather>['name'];
+  focused: boolean;
+}) {
   const { theme, dark } = useAppTheme();
+  const { colors } = theme;
+  const reduced = useReducedMotion();
+  const scale = useRef(new Animated.Value(focused ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(scale, {
+      toValue: focused ? 1 : 0,
+      friction: 5,
+      tension: 120,
+      useNativeDriver: true,
+    }).start();
+  }, [focused, scale]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.iconWrap,
+        focused && {
+          backgroundColor: dark ? colors.surfaceSecondary : colors.softMint,
+        },
+        {
+          transform: [
+            {
+              scale: scale.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, reduced ? 1 : 1.12],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <Feather
+        name={icon}
+        size={20}
+        color={focused ? colors.primary : colors.muted}
+      />
+    </Animated.View>
+  );
+}
+
+function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { theme } = useAppTheme();
   const { colors } = theme;
   const insets = useSafeAreaInsets();
 
@@ -60,7 +109,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         style={[
           styles.tabBar,
           {
-            backgroundColor: dark ? colors.surface : colors.surface,
+            backgroundColor: colors.surface,
             borderColor: colors.border,
           },
           theme.shadows.floatingNav,
@@ -94,22 +143,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               onPress={onPress}
               style={styles.tabButton}
             >
-              <View
-                style={[
-                  styles.iconWrap,
-                  isFocused && {
-                    backgroundColor: dark
-                      ? colors.surfaceSecondary
-                      : colors.softMint,
-                  },
-                ]}
-              >
-                <Feather
-                  name={meta.icon}
-                  size={20}
-                  color={isFocused ? colors.primary : colors.muted}
-                />
-              </View>
+              <TabIcon icon={meta.icon} focused={isFocused} />
               <Text
                 style={[
                   styles.tabLabel,
@@ -135,6 +169,7 @@ function renderFloatingTabBar(props: BottomTabBarProps) {
 
 function AppTabs() {
   useFavourites();
+  useJournalHydration();
   return (
     <Tabs.Navigator
       tabBar={renderFloatingTabBar}
@@ -205,16 +240,9 @@ export function RootNavigator() {
             options={{ title: 'Country details' }}
           />
           <Main.Screen
-            name="JournalEntry"
-            component={JournalEntryScreen}
-            options={{ title: 'Journal entry' }}
-          />
-          <Main.Screen
-            name="EditJournalEntry"
-            component={EditJournalEntryScreen}
-            options={({ route }) => ({
-              title: route.params?.entryId ? 'Edit entry' : 'New entry',
-            })}
+            name="JournalEditor"
+            component={JournalEditorScreen}
+            options={{ headerShown: false, title: 'Journal' }}
           />
           <Main.Screen
             name="Settings"

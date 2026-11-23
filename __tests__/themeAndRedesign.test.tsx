@@ -40,21 +40,21 @@ describe('Theme Architecture & Persistence', () => {
   });
 
   it('resolves correct default Light Mode tokens', () => {
-    expect(lightColors.background).toBe('#F8F7F2');
-    expect(lightColors.primary).toBe('#137C78');
-    expect(lightColors.text).toBe('#172B3A');
-    expect(lightColors.surface).toBe('#FFFFFF');
-    expect(lightColors.accent).toBe('#E88C70');
-    expect(lightColors.softMint).toBe('#DDF1E9');
+    expect(lightColors.background).toBe('#F6F0E4');
+    expect(lightColors.primary).toBe('#0F766E');
+    expect(lightColors.text).toBe('#13213C');
+    expect(lightColors.surface).toBe('#FFFCF6');
+    expect(lightColors.accent).toBe('#E5654A');
+    expect(lightColors.softMint).toBe('#DCEEE6');
   });
 
   it('resolves correct Dark Mode tokens', () => {
-    expect(darkColors.background).toBe('#101B24');
-    expect(darkColors.primary).toBe('#38B5AA');
-    expect(darkColors.text).toBe('#F3F6F7');
-    expect(darkColors.surface).toBe('#1C2A35');
-    expect(darkColors.accent).toBe('#F09C81');
-    expect(darkColors.border).toBe('#334550');
+    expect(darkColors.background).toBe('#0A0F1E');
+    expect(darkColors.primary).toBe('#3DD9C1');
+    expect(darkColors.text).toBe('#F4EFE6');
+    expect(darkColors.surface).toBe('#141B2E');
+    expect(darkColors.accent).toBe('#FF8A6B');
+    expect(darkColors.border).toBe('#2A3452');
   });
 
   it('defaults to system mode and persists appearance choice', async () => {

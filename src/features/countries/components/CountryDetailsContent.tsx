@@ -1,5 +1,5 @@
 import { Feather } from '@react-native-vector-icons/feather/static';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { useState } from 'react';
 import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '../../../components/AppButton';
@@ -86,8 +86,11 @@ function Values({ values }: { values: string[] }) {
 
 export function CountryDetailsContent({
   country,
+  children,
 }: {
   country: CountryDetails;
+  /** Extra sections rendered right after the hero (journal, famous places). */
+  children?: ReactNode;
 }) {
   const { theme, tint, strong } = useCountryTheme();
   const [mapError, setMapError] = useState(false);
@@ -147,6 +150,8 @@ export function CountryDetailsContent({
             'Capital and region unavailable'}
         </Text>
       </View>
+
+      {children}
 
       {/* Overview Grid */}
       <CountrySection title="Overview" icon="globe">
@@ -220,8 +225,7 @@ export function CountryDetailsContent({
         <View style={styles.planningRow}>
           <Feather name="heart" size={19} color={strong} />
           <DetailText>
-            Save this country to your favourites from the header or the Explore
-            screen.
+            Tap the heart in the header to save this country to your favourites.
           </DetailText>
         </View>
         <View style={styles.planningRow}>
@@ -231,9 +235,10 @@ export function CountryDetailsContent({
           </DetailText>
         </View>
         <View style={styles.planningRow}>
-          <Feather name="edit-3" size={19} color={strong} />
+          <Feather name="feather" size={19} color={strong} />
           <DetailText>
-            Personal notes and photos will be available in the travel journal.
+            Saved countries can hold a personal note and photo in your travel
+            journal.
           </DetailText>
         </View>
       </CountrySection>

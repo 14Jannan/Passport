@@ -24,3 +24,23 @@ jest.mock('react-native-keychain', () => ({
   resetGenericPassword: jest.fn().mockResolvedValue(true),
   hasGenericPassword: jest.fn().mockResolvedValue(false),
 }));
+jest.mock('react-native-image-picker', () => ({
+  launchCamera: jest.fn().mockResolvedValue({ didCancel: true }),
+  launchImageLibrary: jest.fn().mockResolvedValue({ didCancel: true }),
+}));
+jest.mock('react-native-file-access', () => {
+  const files = new Set();
+  const FileSystem = {
+    __files: files,
+    exists: jest.fn(async path => files.has(path)),
+    mkdir: jest.fn(async () => undefined),
+    cp: jest.fn(async (_source, target) => {
+      files.add(target);
+    }),
+    unlink: jest.fn(async path => {
+      files.delete(path);
+    }),
+    ls: jest.fn(async () => []),
+  };
+  return { Dirs: { DocumentDir: '/data/docs' }, FileSystem };
+});

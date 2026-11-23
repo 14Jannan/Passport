@@ -56,7 +56,10 @@ export function ShareCountryButton({ country }: { country: Country }) {
 export function CountryDetailsActions({ country }: { country: Country }) {
   return (
     <View style={styles.row}>
-      <FavouriteButton countryCode={country.cca3} />
+      <FavouriteButton
+        countryCode={country.cca3}
+        countryName={country.commonName}
+      />
       <ShareCountryButton country={country} />
     </View>
   );

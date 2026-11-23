@@ -53,7 +53,9 @@ it('opens the protected experience after a successful login and signs out from P
     );
     fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(await screen.findByText('Where to next?')).toBeOnTheScreen();
-    expect(await screen.findByText('Sri Lanka')).toBeOnTheScreen();
+    expect(
+      await screen.findByRole('button', { name: /^Sri Lanka, / }),
+    ).toBeOnTheScreen();
     expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
     fireEvent.press(screen.getByRole('button', { name: 'Asia region' }));
     fireEvent.changeText(screen.getByLabelText('Search countries'), 'Japan');

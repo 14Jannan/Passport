@@ -1,15 +1,16 @@
 # Passport
 
-Passport is a React Native CLI application for travel discovery and a personal travel journal. Passport is developed for IN3210 Mobile Applications Development, Assignment 2 (234088L).
+Passport is a React Native application with an Expo development build for travel discovery and a personal travel journal. Passport is developed for IN3210 Mobile Applications Development, Assignment 2 (234088L).
 
 **Tagline:** Explore the World. Capture the Journey.
 
 ## Setup
 
-1. Install Node.js 22.11 or newer (CI uses Node.js 24) and run `npm ci`.
+1. Install Node.js 22.13 or newer (CI uses Node.js 24) and run `npm ci`.
 2. For Android, install JDK 21 and Android Studio. Use SDK Manager to install Android SDK Platform 36, Build Tools 36.0.0, NDK 27.1.12297006, and CMake 3.22.1. Set `ANDROID_HOME` to the SDK directory and start an emulator or connect a device.
 3. For iOS, use macOS with Xcode and its command-line tools. Run `bundle install` at the root, then run `bundle exec pod install` from `ios/`.
-4. Run `npm start` to start Metro. In a second terminal, run `npm run android` or `npm run ios`.
+4. Run `npm run android` or `npm run ios` to build and install the Passport development app. After installation, use `npm start` to start Expo Metro for future sessions.
+5. On a physical phone, join the same network as the development computer and scan the Expo terminal QR code with the installed Passport development build.
 
 ## Demo sign-in
 
@@ -23,20 +24,24 @@ Passport uses the **Passport Explore — Premium Travel Editorial** visual ident
 
 ### Color Tokens
 
-| Token             | Light Theme | Dark Theme | Purpose                                 |
-| ----------------- | ----------- | ---------- | --------------------------------------- |
-| Background        | `#F8F7F2`   | `#101B24`  | Primary screen canvas                   |
-| Primary Surface   | `#FFFFFF`   | `#1C2A35`  | Card backgrounds and sheets             |
-| Secondary Surface | `#F0F3F1`   | `#263844`  | Inset backgrounds and pill containers   |
-| Primary Text      | `#172B3A`   | `#F3F6F7`  | Headings and high-emphasis labels       |
-| Secondary Text    | `#667784`   | `#A8B7C2`  | Subtitles, captions and metadata        |
-| Primary Button    | `#137C78`   | `#38B5AA`  | Primary actions and active highlights   |
-| Primary Dark      | `#0B5957`   | `#28948A`  | High-contrast brand elements            |
-| Accent            | `#E88C70`   | `#F09C81`  | Highlights, badges and saved heart icon |
-| Soft Mint         | `#DDF1E9`   | `#1F3D39`  | Subtle highlights and tint surfaces     |
-| Border            | `#E4E9E8`   | `#334550`  | Structural dividers and card borders    |
-| Success           | `#27866F`   | `#55C49D`  | Positive feedback and confirmations     |
-| Error             | `#C64242`   | `#FF7777`  | Form validation and connectivity errors |
+Passport uses the **Passport Atlas** palette: warm parchment pages and ink-navy type in light mode ("Sunlit Atlas"), and a deep night-sky canvas with aurora teal and lantern gold in dark mode ("Midnight Atlas").
+
+| Token             | Light Theme | Dark Theme | Purpose                                       |
+| ----------------- | ----------- | ---------- | --------------------------------------------- |
+| Background        | `#F6F0E4`   | `#0A0F1E`  | Parchment / midnight screen canvas            |
+| Primary Surface   | `#FFFCF6`   | `#141B2E`  | Card backgrounds and sheets                   |
+| Secondary Surface | `#EFE6D5`   | `#1E2740`  | Inset backgrounds, inputs and pills           |
+| Primary Text      | `#13213C`   | `#F4EFE6`  | Headings and high-emphasis labels             |
+| Secondary Text    | `#5E6B7E`   | `#9AA6BF`  | Subtitles, captions and metadata              |
+| Primary           | `#0F766E`   | `#3DD9C1`  | Lagoon / aurora teal actions and active state |
+| Primary Dark      | `#0B4F4A`   | `#22B3A0`  | High-contrast brand elements                  |
+| Accent            | `#E5654A`   | `#FF8A6B`  | Passport-stamp coral, saved heart, badges     |
+| Gold              | `#B7832A`   | `#F2C46D`  | Journal highlights, rank badges, kickers      |
+| Stamp             | `#3B4CCA`   | `#8C9BFF`  | Passport-stamp ink for journal identity       |
+| Soft Mint         | `#DCEEE6`   | `#16363A`  | Subtle highlights and tint surfaces           |
+| Border            | `#E5DAC6`   | `#2A3452`  | Structural dividers and card borders          |
+| Success           | `#2F855A`   | `#5FD3A0`  | Positive feedback and confirmations           |
+| Error             | `#C53030`   | `#FF7A7A`  | Validation, destructive actions and failures  |
 
 ### Official Assignment Bonus Feature: Persistent Dark Mode & System Theme
 
@@ -53,6 +58,7 @@ Located in **Profile → Settings**:
 
 - Segmented radio selector supporting Light, Dark, and System modes.
 - Instant live updates across all mounted screens, navigation headers, floating tab bar, and system status bar without restarting the app or resetting navigation.
+- A one-tap animated sun/moon toggle on the Explore hero switches between light and dark and persists the choice.
 
 ### Destination Photography & Attribution
 
@@ -81,8 +87,22 @@ Passport integrates curated travel photography from [Unsplash](https://unsplash.
 
 For countries without curated photography, an elegant fallback combining the country's flag and thematic container is displayed.
 
+### Famous places for every country
+
+Country Details shows a **Famous places** gallery for all ~250 countries, not only the curated ones:
+
+- Places come from English Wikipedia's `World Heritage Sites in …` and `Tourist attractions in …` categories via the MediaWiki search API (`src/features/countries/api/famousPlacesApi.ts`). A keyword search fills in countries with sparse categories. Lists, overview articles and the country's own article are filtered out, and only places with a lead photo are kept (up to 10, ranked by search relevance).
+- Results are cached by RTK Query for an hour per country.
+- Wikimedia rejects generic HTTP-client user agents with HTTP 403, so API calls send an identifying `User-Agent`. Photos are downloaded once into the app cache with the same header (`CommonsImage`) and displayed from disk.
+- Cards snap horizontally; tapping one opens a full-screen, swipeable viewer with the description, a short Wikipedia extract, a "Read on Wikipedia" link and attribution (Wikimedia Commons / Wikipedia, CC BY-SA).
+- Loading skeletons, a retry action on failure and a friendly empty state are included.
+
 ### Animations & Micro-Interactions
 
+- **Trending carousel:** Explore opens with a snapping "Trending destinations" rail; the centred card scales up while neighbours shrink and dim, with animated progress dots.
+- **Staggered entrances:** Country, journal and editor cards fade and lift into place (`FadeInView`).
+- **Animated tab bar:** The focused tab icon springs up inside a tinted pill.
+- **Reduced motion:** All new animations respect the OS reduce-motion setting (`useReducedMotion`).
 - **Card Press Scale:** Spring micro-interaction (`Animated.spring`) providing tactile feedback on touch.
 - **Heart Toggle Bounce:** Elastic sequence animation (`Animated.sequence`) when saving or removing favourites.
 - **Image Fade-in:** Smooth opacity transition as destination photos resolve.
@@ -96,27 +116,68 @@ For countries without curated photography, an elegant fallback combining the cou
 
 ## Screens
 
-| Screen                | Status      | Description                                                                        |
-| --------------------- | ----------- | ---------------------------------------------------------------------------------- |
-| **Session Splash**    | Implemented | Brand compass icon, wordmark, travel quote, session check                          |
-| **Sign In**           | Implemented | Travel brand presentation, validated form, demo account helper                     |
-| **Register**          | Implemented | DummyJSON registration simulation with validation feedback                         |
-| **Explore**           | Implemented | Greeting, featured destination banner, search, region filters, sort, photo cards   |
-| **Favourites**        | Implemented | Saved destinations wishlist, search, photo cards, remove action, empty states      |
-| **Country Details**   | Implemented | Panoramic photography, flag badge, overview grid, geography, culture, native share |
-| **Profile**           | Implemented | Initials avatar, username, saved places counter, settings entry, logout            |
-| **Settings**          | Implemented | Appearance mode selector (Light/Dark/System), application credits                  |
-| **Journal**           | Foundation  | Scheduled for Prompt 6 (notes & photos)                                            |
-| **Journal Entry**     | Foundation  | Scheduled for Prompt 6                                                             |
-| **New/Edit Entry**    | Foundation  | Scheduled for Prompt 6                                                             |
-| **Bucket List**       | Foundation  | Scheduled for Prompt 7                                                             |
-| **Travel Statistics** | Foundation  | Scheduled for future release                                                       |
+| Screen              | Status      | Description                                                                        |
+| ------------------- | ----------- | ---------------------------------------------------------------------------------- |
+| **Session Splash**  | Implemented | Brand compass icon, wordmark, travel quote, session check                          |
+| **Sign In**         | Implemented | Travel brand presentation, validated form, demo account helper                     |
+| **Register**        | Implemented | DummyJSON registration simulation with validation feedback                         |
+| **Explore**         | Implemented | Time-aware greeting, theme toggle, trending carousel, search, filters, photo cards |
+| **Favourites**      | Implemented | Saved destinations wishlist, search, photo cards, remove action, empty states      |
+| **Country Details** | Implemented | Hero photo, personal journal, famous places gallery, overview, geography, share    |
+| **Profile**         | Implemented | Avatar, saved/journal/photo statistics, journal shortcut, settings, logout         |
+| **Settings**        | Implemented | Appearance mode selector (Light/Dark/System), application credits                  |
+| **Journal**         | Implemented | Stats, "start a journal" chips, photo-rich entry cards, empty state                |
+| **Journal Editor**  | Implemented | Note with counter, camera/gallery photo, replace/remove, save, delete, guards      |
+| **Bucket List**     | Foundation  | Scheduled for Prompt 7                                                             |
 
 ## Favourites
 
 - Saved destinations are synchronized in Redux Toolkit (`favouritesSlice`) and persisted to AsyncStorage under user-scoped keys (`passport:favourites:<userId>`).
 - Cross-user data isolation ensures switching accounts preserves independent wishlists.
-- Removal policy safely handles immediate removal when no notes exist, with confirmation hooks reserved for journal integration.
+- Removal policy: a favourite without journal content is removed immediately. If it has a journal note or photo, the user is asked to confirm, and removing it also deletes the journal entry and its stored photo (`removeFavouriteAndJournal`). Journal content is never deleted silently.
+
+## Travel journal (Personal Notes & Photos)
+
+Each favourite country can hold one journal entry with a short note, a photo, or both.
+
+### Data model
+
+```ts
+interface JournalEntry {
+  countryCode: string; // cca3
+  note: string; // trimmed, max 500 characters
+  photoUri: string | null; // file:// URI in app-private storage
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
+}
+```
+
+No country metadata is stored; names and flags come from the countries cache.
+
+### Architecture
+
+- **State:** `journalSlice` (Redux Toolkit) keeps entries keyed by country code. Actions: `createJournalEntry`, `updateJournalEntry`, `setJournalPhoto`, `removeJournalPhoto`, `deleteJournalEntry`, `hydrateJournal`. Selectors: `selectJournalEntries` (newest first), `selectJournalEntryByCountry`, `selectJournalCount`. An entry left with neither note nor photo is pruned automatically.
+- **Thunks:** `journalActions.ts` coordinates Redux, storage and files: `saveJournalEntry`, `deleteJournalEntryWithPhoto`, `removeFavouriteAndJournal` and `hydrateJournalForUser`. Every write is persisted before it counts as done; a failed write rolls Redux back to the previous snapshot and shows an error.
+- **UI:** the Journal tab, the full-screen Journal Editor (`JournalEditor` route) and the Personal Journal panel on Country Details. Unsaved countries explain that they must be saved first and offer **Save to Favourites**.
+
+### Persistence
+
+- Metadata is stored in AsyncStorage under the per-user key `passport:journal:<userId>` as `{ "version": 1, "entries": [...] }`. The loader also accepts a bare array, drops invalid entries individually and treats corrupted JSON as an empty journal.
+- Photo bytes are never stored in AsyncStorage. After the camera or gallery returns a temporary URI, the photo is validated and copied with `react-native-file-access` into `DocumentDir/journal/<userId>/` with a unique name such as `LKA-1732350000000-k3j9x2.jpg`. Only that persistent `file://` URI is saved.
+- Replacement is safe: the new copy is written first, the entry is saved, and only then is the previous photo deleted. If saving fails, the old photo is kept.
+- Unsaved copies are deleted when the editor closes without saving, and on every sign-in an orphan sweep removes files in the user's journal folder that no entry references.
+- A missing photo file shows a theme-aware placeholder asking the user to replace it.
+
+### Camera and gallery
+
+- `react-native-image-picker` provides **Take Photo** (`launchCamera`) and **Choose from Gallery** (`launchImageLibrary`, one photo). Photos are resized on the picker side to at most 1600 px at 80% quality; files over 15 MB and non-image types are rejected.
+- Cancellation returns to the editor quietly. Permission denial, missing camera hardware (for example emulators without a camera) and picker errors show clear messages instead of crashing.
+- **Android:** the app does not declare `CAMERA`, so the picker uses the system camera intent and no runtime camera permission is requested. The gallery uses the system photo picker, so no broad storage permission is needed.
+- **iOS:** `NSCameraUsageDescription` and `NSPhotoLibraryUsageDescription` are set in `Info.plist`. The library picker uses PHPicker, which supports limited-library access.
+
+### Editor states
+
+Empty editor, character counter, unsaved-changes guard on back navigation, photo picking and copying progress, saving with double-submit protection, success and error banners, delete confirmation, and missing-photo handling.
 
 ## Checks
 
@@ -128,6 +189,8 @@ npm run format:check
 npm run test:ci
 ```
 
+Native modules are mocked in `jest.setup.js` (`react-native-image-picker`, `react-native-file-access`). Journal behaviour is covered by `__tests__/journal.test.tsx`.
+
 For Android build verification, run `./gradlew :app:assembleDebug` from `android/` on macOS or Linux, or `./gradlew.bat :app:assembleDebug` from PowerShell on Windows.
 
 ## Source layout
@@ -137,4 +200,6 @@ For Android build verification, run `./gradlew :app:assembleDebug` from `android
 - `src/navigation/` owns typed routes and the custom floating bottom tab navigator.
 - `src/components/` contains reusable buttons, inputs, headers, and empty states.
 - `src/theme/` contains design tokens, light/dark themes, `ThemeProvider`, and `useAppTheme`.
-- `src/services/` contains API base queries, storage adapters, and photo persistence helpers.
+- `src/services/` contains the API base query and storage adapters.
+- `src/features/journal/` contains the journal model, slice, storage, photo services, thunks and screens.
+- `src/hooks/` contains shared hooks such as `useReducedMotion`.

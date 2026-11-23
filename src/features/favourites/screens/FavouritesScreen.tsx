@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../../components/AppHeader';
 import { EmptyState } from '../../../components/EmptyState';
 import type { MainStackParams } from '../../../navigation/types';
@@ -28,6 +29,7 @@ function CardGap() {
 export function FavouritesScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MainStackParams>>();
+  const insets = useSafeAreaInsets();
   const { theme, tint, strong } = useCountryTheme();
   const { colors } = theme;
 
@@ -184,7 +186,10 @@ export function FavouritesScreen() {
       <FlatList
         testID="favourites-list"
         style={{ backgroundColor: colors.background }}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 12 },
+        ]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         ListHeaderComponent={header}

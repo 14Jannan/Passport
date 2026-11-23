@@ -142,7 +142,11 @@ export function CountryCard({
           </Text>
         </View>
 
-        <FavouriteButton countryCode={country.cca3} size={19} />
+        <FavouriteButton
+          countryCode={country.cca3}
+          countryName={country.commonName}
+          size={19}
+        />
         <Feather name="chevron-right" size={20} color={strong} />
       </Pressable>
     </Animated.View>

@@ -75,7 +75,7 @@ export function AppearanceSelector() {
                       ? colors.primary
                       : dark
                       ? colors.surfaceSecondary
-                      : '#EFEFEF',
+                      : colors.surfaceSecondary,
                   },
                 ]}
               >

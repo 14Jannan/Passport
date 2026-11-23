@@ -3,9 +3,10 @@ import {
   type ThunkAction,
   type UnknownAction,
 } from '@reduxjs/toolkit';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { sessionReducer } from '../features/auth/session';
 import { favouritesReducer } from '../features/favourites/store/favouritesSlice';
+import { journalReducer } from '../features/journal/store/journalSlice';
 import { api } from '../services/api';
 
 export function createAppStore() {
@@ -15,6 +16,7 @@ export function createAppStore() {
     reducer: {
       session: sessionReducer,
       favourites: favouritesReducer,
+      journal: journalReducer,
       [api.reducerPath]: api.reducer,
     },
     middleware: getDefaultMiddleware =>
@@ -23,7 +25,7 @@ export function createAppStore() {
 }
 
 export const store = createAppStore();
-type RootState = ReturnType<typeof store.getState>;
+export type RootState = ReturnType<typeof store.getState>;
 export type AppThunk<Result> = ThunkAction<
   Result,
   RootState,
@@ -32,3 +34,4 @@ export type AppThunk<Result> = ThunkAction<
 >;
 export const useAppSelector = useSelector.withTypes<RootState>();
 export const useAppDispatch = useDispatch.withTypes<typeof store.dispatch>();
+export const useAppStore = useStore.withTypes<typeof store>();

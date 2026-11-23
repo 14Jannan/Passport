@@ -1,27 +1,26 @@
+import type { JournalEntry } from '../../journal/types';
 import type { FavouriteCountry } from '../types/favourite.types';
 
-/**
- * Check whether a country has associated journal data.
- * Returns false until journal functionality is implemented (Prompt 6).
- *
- * When journal notes/photos are introduced, this function should check the
- * journal store for entries associated with the given country code.
- */
-export function hasJournalData(_countryCode: string): boolean {
-  return false;
+/** Whether a country has a journal note or photo attached. */
+export function hasJournalData(
+  entries: Record<string, JournalEntry>,
+  countryCode: string,
+): boolean {
+  const entry = entries[countryCode];
+  return !!entry && (!!entry.note || !!entry.photoUri);
 }
 
 /**
- * Determine whether a favourite can be removed immediately.
- *
- * Current policy:
- * - Countries with no journal data are removed immediately.
- * - Countries with journal data should prompt for confirmation (future).
- *
- * Since journal is not yet implemented, all countries can be removed immediately.
+ * Removal policy:
+ * - Countries without journal content are removed immediately.
+ * - Countries with a journal note/photo require confirmation, and removing
+ *   them also deletes the entry and its stored photo.
  */
-export function canRemoveImmediately(countryCode: string): boolean {
-  return !hasJournalData(countryCode);
+export function canRemoveImmediately(
+  entries: Record<string, JournalEntry>,
+  countryCode: string,
+): boolean {
+  return !hasJournalData(entries, countryCode);
 }
 
 /**

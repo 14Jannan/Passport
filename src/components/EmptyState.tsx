@@ -9,6 +9,7 @@ type Props = {
   description: string;
   icon?: string;
   action?: { label: string; onPress: () => void };
+  secondaryAction?: { label: string; onPress: () => void };
 };
 
 export function EmptyState({
@@ -16,6 +17,7 @@ export function EmptyState({
   description,
   icon = 'compass',
   action,
+  secondaryAction,
 }: Props) {
   const { theme, dark } = useAppTheme();
   const { colors } = theme;
@@ -50,6 +52,11 @@ export function EmptyState({
       {action && (
         <View style={styles.actionContainer}>
           <AppButton {...action} />
+        </View>
+      )}
+      {secondaryAction && (
+        <View style={styles.actionContainer}>
+          <AppButton {...secondaryAction} variant="secondary" />
         </View>
       )}
     </View>
