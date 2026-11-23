@@ -1,4 +1,11 @@
 {
   "name": "Passport",
-  "displayName": "Passport"
+  "slug": "passport",
+  "scheme": "passport",
+  "android": {
+    "package": "com.passport"
+  },
+  "ios": {
+    "bundleIdentifier": "org.reactjs.native.example.Passport"
+  }
 }

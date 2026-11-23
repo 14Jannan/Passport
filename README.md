@@ -1,15 +1,16 @@
 # Passport
 
-Passport is a React Native CLI application for travel discovery and a personal travel journal. Passport is developed for IN3210 Mobile Applications Development, Assignment 2 (234088L).
+Passport is a React Native application with an Expo development build for travel discovery and a personal travel journal. Passport is developed for IN3210 Mobile Applications Development, Assignment 2 (234088L).
 
 **Tagline:** Explore the World. Capture the Journey.
 
 ## Setup
 
-1. Install Node.js 22.11 or newer (CI uses Node.js 24) and run `npm ci`.
+1. Install Node.js 22.13 or newer (CI uses Node.js 24) and run `npm ci`.
 2. For Android, install JDK 21 and Android Studio. Use SDK Manager to install Android SDK Platform 36, Build Tools 36.0.0, NDK 27.1.12297006, and CMake 3.22.1. Set `ANDROID_HOME` to the SDK directory and start an emulator or connect a device.
 3. For iOS, use macOS with Xcode and its command-line tools. Run `bundle install` at the root, then run `bundle exec pod install` from `ios/`.
-4. Run `npm start` to start Metro. In a second terminal, run `npm run android` or `npm run ios`.
+4. Run `npm run android` or `npm run ios` to build and install the Passport development app. After installation, use `npm start` to start Expo Metro for future sessions.
+5. On a physical phone, join the same network as the development computer and scan the Expo terminal QR code with the installed Passport development build.
 
 ## Demo sign-in
 
