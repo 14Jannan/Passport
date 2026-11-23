@@ -219,29 +219,6 @@ export function CountryDetailsContent({
       <CountrySection title="Time zones" icon="clock">
         <Values values={country.timezones} />
       </CountrySection>
-
-      {/* Travel Planning Section */}
-      <CountrySection title="Travel planning" icon="bookmark">
-        <View style={styles.planningRow}>
-          <Feather name="heart" size={19} color={strong} />
-          <DetailText>
-            Tap the heart in the header to save this country to your favourites.
-          </DetailText>
-        </View>
-        <View style={styles.planningRow}>
-          <Feather name="columns" size={19} color={strong} />
-          <DetailText>
-            Country comparison is coming in a later update.
-          </DetailText>
-        </View>
-        <View style={styles.planningRow}>
-          <Feather name="feather" size={19} color={strong} />
-          <DetailText>
-            Saved countries can hold a personal note and photo in your travel
-            journal.
-          </DetailText>
-        </View>
-      </CountrySection>
     </>
   );
 }
@@ -316,5 +293,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
-  planningRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
 });

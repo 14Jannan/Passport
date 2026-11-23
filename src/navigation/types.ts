@@ -8,6 +8,7 @@ export type AuthStackParams = {
 export type TabParams = {
   Discover: undefined;
   Saved: undefined;
+  Bucket: undefined;
   Journal: undefined;
   Profile: undefined;
 };

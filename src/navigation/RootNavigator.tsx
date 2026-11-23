@@ -18,6 +18,7 @@ import { RegisterScreen } from '../features/auth/screens/RegisterScreen';
 import { SessionSplash } from '../features/auth/screens/SessionSplash';
 import { CountryDetailsScreen } from '../features/countries/screens/CountryDetailsScreen';
 import { ExploreScreen } from '../features/countries/screens/ExploreScreen';
+import { BucketListScreen } from '../features/bucketList/screens/BucketListScreen';
 import { useFavouritesSync } from '../features/favourites/hooks/useFavourites';
 import { useJournalHydration } from '../features/journal/hooks/useJournal';
 import { JournalEditorScreen } from '../features/journal/screens/JournalEditorScreen';
@@ -38,6 +39,7 @@ const tabMeta: Record<
 > = {
   Discover: { label: 'Explore', icon: 'compass' },
   Saved: { label: 'Favourites', icon: 'bookmark' },
+  Bucket: { label: 'Bucket List', icon: 'flag' },
   Journal: { label: 'Journal', icon: 'book-open' },
   Profile: { label: 'Profile', icon: 'user' },
 };
@@ -184,6 +186,11 @@ function AppTabs() {
         name="Saved"
         component={SavedScreen}
         options={{ title: 'Favourites' }}
+      />
+      <Tabs.Screen
+        name="Bucket"
+        component={BucketListScreen}
+        options={{ title: 'Bucket List' }}
       />
       <Tabs.Screen name="Journal" component={JournalScreen} />
       <Tabs.Screen name="Profile" component={ProfileScreen} />

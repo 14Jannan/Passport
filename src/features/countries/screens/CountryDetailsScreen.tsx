@@ -9,6 +9,7 @@ import type { MainStackParams } from '../../../navigation/types';
 import { AppThemeOverride } from '../../../theme/theme';
 import { useGetCountryDetailsQuery } from '../api/countriesApi';
 import { CountryDetailsActions } from '../components/CountryDetailsActions';
+import { TravelPlanningSection } from '../../bucketList/components/TravelPlanningSection';
 import { CountryJournalSection } from '../../journal/components/CountryJournalSection';
 import { CountryDetailsContent } from '../components/CountryDetailsContent';
 import { FamousPlacesSection } from '../components/FamousPlacesSection';
@@ -68,6 +69,7 @@ export function CountryDetailsScreen({
               </>
             )}
             <CountryDetailsContent key={country.cca3} country={country}>
+              <TravelPlanningSection country={country} />
               <CountryJournalSection country={country} />
               <FamousPlacesSection country={country} />
             </CountryDetailsContent>
