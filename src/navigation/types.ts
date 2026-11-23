@@ -15,7 +15,6 @@ export type TabParams = {
 export type MainStackParams = {
   Home: NavigatorScreenParams<TabParams> | undefined;
   CountryDetails: { countryCode: string };
-  JournalEntry: { entryId: string };
-  EditJournalEntry: { entryId?: string } | undefined;
+  JournalEditor: { countryCode: string };
   Settings: undefined;
 };

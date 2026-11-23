@@ -10,6 +10,10 @@ import type { MainStackParams } from '../../navigation/types';
 import { useAppTheme } from '../../theme/theme';
 import { logoutSession } from '../auth/services/sessionActions';
 import { selectFavouriteCount } from '../favourites/store/favouritesSelectors';
+import {
+  selectJournalCount,
+  selectJournalPhotoCount,
+} from '../journal/store/journalSelectors';
 import { AppearanceSelector } from './components/AppearanceSelector';
 
 export function ProfileScreen() {
@@ -18,6 +22,8 @@ export function ProfileScreen() {
   const dispatch = useAppDispatch();
   const session = useAppSelector(state => state.session);
   const favouriteCount = useAppSelector(selectFavouriteCount);
+  const journalCount = useAppSelector(selectJournalCount);
+  const photoCount = useAppSelector(selectJournalPhotoCount);
   const { theme, dark } = useAppTheme();
   const { colors } = theme;
 
@@ -30,7 +36,7 @@ export function ProfileScreen() {
   const fullName = `${firstName} ${lastName}`.trim() || username;
 
   return (
-    <ScreenLayout>
+    <ScreenLayout safeTop>
       {/* Profile Header Card */}
       <View
         style={[
@@ -126,13 +132,52 @@ export function ProfileScreen() {
         <View style={styles.statsHeader}>
           <Feather name="bar-chart-2" size={20} color={colors.accent} />
           <Text style={[styles.statsTitle, { color: colors.text }]}>
-            Travel statistics
+            Your travel story
           </Text>
         </View>
-        <Text style={[styles.statsDesc, { color: colors.muted }]}>
-          Travel statistics, visited countries, and world map exploration
-          coverage will appear in a future update.
-        </Text>
+        <View style={styles.statsRow}>
+          {[
+            { label: 'Saved', value: favouriteCount, icon: 'heart' as const },
+            { label: 'Journal', value: journalCount, icon: 'book' as const },
+            { label: 'Photos', value: photoCount, icon: 'image' as const },
+          ].map(stat => (
+            <View
+              key={stat.label}
+              accessible
+              accessibilityLabel={`${stat.value} ${stat.label}`}
+              style={[
+                styles.statTile,
+                {
+                  backgroundColor: dark
+                    ? colors.surfaceSecondary
+                    : colors.softMint,
+                },
+              ]}
+            >
+              <Feather name={stat.icon} size={16} color={colors.primary} />
+              <Text style={[styles.statValue, { color: colors.text }]}>
+                {stat.value}
+              </Text>
+              <Text style={[styles.statsDesc, { color: colors.muted }]}>
+                {stat.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open travel journal"
+          onPress={() => navigation.navigate('Home', { screen: 'Journal' })}
+          style={({ pressed }) => [
+            styles.journalLink,
+            { opacity: pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Text style={[styles.journalLinkText, { color: colors.primary }]}>
+            Open travel journal
+          </Text>
+          <Feather name="arrow-right" size={16} color={colors.primary} />
+        </Pressable>
       </View>
 
       {/* Primary Actions */}
@@ -281,9 +326,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   statsDesc: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
+  statsRow: { flexDirection: 'row', gap: 10 },
+  statTile: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 16,
+    gap: 2,
+  },
+  statValue: { fontSize: 22, fontWeight: '800' },
+  journalLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+  },
+  journalLinkText: { fontSize: 15, fontWeight: '700' },
   actionSection: {
     gap: 12,
     marginTop: 4,

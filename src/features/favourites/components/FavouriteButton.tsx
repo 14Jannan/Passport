@@ -2,12 +2,15 @@ import { Feather } from '@react-native-vector-icons/feather/static';
 import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet } from 'react-native';
 import { useCountryTheme } from '../../countries/countryTheme';
-import { useFavourites, useIsFavourite } from '../hooks/useFavourites';
+import { useFavouriteToggle } from '../hooks/useFavouriteToggle';
+import { useIsFavourite } from '../hooks/useFavourites';
 
 type Props = {
   countryCode: string;
   /** Size of the heart icon. Defaults to 21. */
   size?: number;
+  /** Country name used in the removal confirmation. */
+  countryName?: string;
 };
 
 /**
@@ -19,9 +22,13 @@ type Props = {
  * - Large accessible touch target (48 dp minimum).
  * - Immediate visual and animated feedback.
  */
-export function FavouriteButton({ countryCode, size = 21 }: Props) {
+export function FavouriteButton({
+  countryCode,
+  size = 21,
+  countryName,
+}: Props) {
   const isFavourite = useIsFavourite(countryCode);
-  const { toggle } = useFavourites();
+  const toggle = useFavouriteToggle();
   const { theme } = useCountryTheme();
   const pending = useRef(false);
   const scale = useRef(new Animated.Value(1)).current;
@@ -47,7 +54,7 @@ export function FavouriteButton({ countryCode, size = 21 }: Props) {
       }),
     ]).start();
 
-    toggle(countryCode);
+    toggle(countryCode, countryName);
     setTimeout(() => {
       pending.current = false;
     }, 200);

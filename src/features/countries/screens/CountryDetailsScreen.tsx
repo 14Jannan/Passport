@@ -9,7 +9,9 @@ import type { MainStackParams } from '../../../navigation/types';
 import { AppThemeOverride } from '../../../theme/theme';
 import { useGetCountryDetailsQuery } from '../api/countriesApi';
 import { CountryDetailsActions } from '../components/CountryDetailsActions';
+import { CountryJournalSection } from '../../journal/components/CountryJournalSection';
 import { CountryDetailsContent } from '../components/CountryDetailsContent';
+import { FamousPlacesSection } from '../components/FamousPlacesSection';
 import { useCountryTheme } from '../countryTheme';
 import { normalizeCountryCode } from '../utils/countryDetails';
 
@@ -65,7 +67,10 @@ export function CountryDetailsScreen({
                 />
               </>
             )}
-            <CountryDetailsContent key={country.cca3} country={country} />
+            <CountryDetailsContent key={country.cca3} country={country}>
+              <CountryJournalSection country={country} />
+              <FamousPlacesSection country={country} />
+            </CountryDetailsContent>
           </>
         ) : isFetching ? (
           <>
