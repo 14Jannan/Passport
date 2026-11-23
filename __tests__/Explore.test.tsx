@@ -109,15 +109,21 @@ it('retries a failed catalog request and preserves cached cards during a failed 
       await screen.findByText('Could not load countries'),
     ).toBeOnTheScreen();
     fireEvent.press(screen.getByRole('button', { name: 'Retry' }));
-    expect(await screen.findByText('Sri Lanka')).toBeOnTheScreen();
+    expect(
+      await screen.findByRole('button', { name: /^Sri Lanka, / }),
+    ).toBeOnTheScreen();
     fireEvent(screen.getByTestId('country-list'), 'refresh');
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
-    expect(screen.getByText('Sri Lanka')).toBeOnTheScreen();
+    expect(
+      screen.getByRole('button', { name: /^Sri Lanka, / }),
+    ).toBeOnTheScreen();
     await act(async () => finishRefresh(new Response('{}', { status: 503 })));
     expect(
       await screen.findByText(/Showing the last loaded countries/),
     ).toBeOnTheScreen();
-    expect(screen.getByText('Sri Lanka')).toBeOnTheScreen();
+    expect(
+      screen.getByRole('button', { name: /^Sri Lanka, / }),
+    ).toBeOnTheScreen();
   } finally {
     dispose();
   }

@@ -5,10 +5,13 @@ import { spacing, type Spacing } from './spacing';
 import { typography, type Typography } from './typography';
 
 export const palette = {
-  oceanTeal: '#087F79',
-  warmIvory: '#FFF8EB',
-  sunsetCoral: '#EF7867',
-  deepNavy: '#102638',
+  lagoonTeal: '#0F766E',
+  parchment: '#F6F0E4',
+  stampCoral: '#E5654A',
+  inkNavy: '#13213C',
+  brassGold: '#B7832A',
+  auroraTeal: '#3DD9C1',
+  midnight: '#0A0F1E',
 };
 
 export interface AppTheme {

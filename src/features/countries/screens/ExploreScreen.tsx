@@ -3,9 +3,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppSelector } from '../../../app/store';
 import { AppButton } from '../../../components/AppButton';
 import { AppHeader } from '../../../components/AppHeader';
+import { FadeInView } from '../../../components/FadeInView';
+import { ThemeToggleButton } from '../../../components/ThemeToggleButton';
 import type { MainStackParams } from '../../../navigation/types';
 import { AppThemeOverride } from '../../../theme/theme';
 import { useGetCountriesQuery } from '../api/countriesApi';
@@ -13,9 +16,10 @@ import { CountryCard } from '../components/CountryCard';
 import { CountryListState } from '../components/CountryListState';
 import { CountrySearchBar } from '../components/CountrySearchBar';
 import { CountrySortModal } from '../components/CountrySortModal';
-import { FeaturedDestinationCard } from '../components/FeaturedDestinationCard';
 import { RegionFilterChips } from '../components/RegionFilterChips';
+import { TrendingCarousel } from '../components/TrendingCarousel';
 import { useCountryTheme } from '../countryTheme';
+import { destinationPhotos } from '../data/photography';
 import { useDebouncedSearch } from '../hooks/useDebouncedSearch';
 import {
   defaultSort,
@@ -24,6 +28,19 @@ import {
   type CountrySort,
   type Region,
 } from '../utils/discovery';
+
+function greetingFor(hour: number) {
+  if (hour < 5) {
+    return 'Night owl';
+  }
+  if (hour < 12) {
+    return 'Good morning';
+  }
+  if (hour < 18) {
+    return 'Good afternoon';
+  }
+  return 'Good evening';
+}
 
 function CardGap() {
   return <View style={styles.gap} />;
@@ -42,6 +59,7 @@ export function ExploreScreen() {
 
   const { theme, tint, strong } = useCountryTheme();
   const { colors } = theme;
+  const insets = useSafeAreaInsets();
   const network = useNetInfo();
   const offline =
     (network.isInternetReachable ?? network.isConnected) === false;
@@ -61,12 +79,15 @@ export function ExploreScreen() {
     [data, region, search.query, sort],
   );
 
-  // Pick a featured destination from the catalog (Japan or first available)
-  const featuredCountry = useMemo(() => {
-    if (!data || data.length === 0) {
-      return null;
+  // Destinations with curated photography, in editorial order.
+  const trending = useMemo(() => {
+    if (!data) {
+      return [];
     }
-    return data.find(c => c.cca3 === 'JPN') ?? data[0];
+    const byCode = new Map(data.map(country => [country.cca3, country]));
+    return Object.keys(destinationPhotos)
+      .map(code => byCode.get(code))
+      .filter((country): country is NonNullable<typeof country> => !!country);
   }, [data]);
 
   function clearFilters() {
@@ -80,7 +101,7 @@ export function ExploreScreen() {
     }
   }
 
-  const showFeatured = featuredCountry && region === 'All' && !search.query;
+  const showFeatured = trending.length > 0 && region === 'All' && !search.query;
 
   const header = (
     <View style={styles.header}>
@@ -93,34 +114,38 @@ export function ExploreScreen() {
       >
         <View style={styles.heroTopRow}>
           <View style={styles.greetingContainer}>
-            {firstName ? (
-              <Text style={[styles.greeting, { color: strong }]}>
-                Hello, {firstName} 👋
-              </Text>
-            ) : null}
+            <Text style={[styles.greeting, { color: strong }]}>
+              {greetingFor(new Date().getHours())}
+              {firstName ? `, ${firstName}` : ''} ✈️
+            </Text>
             <AppHeader title="Where to next?" />
             <Text style={[styles.subtitle, { color: colors.muted }]}>
               Discover your next destination
             </Text>
           </View>
-          {initials ? (
-            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.avatarText, { color: colors.onPrimary }]}>
-                {initials}
-              </Text>
-            </View>
-          ) : null}
+          <View style={styles.heroActions}>
+            <ThemeToggleButton />
+            {initials ? (
+              <View
+                style={[styles.avatar, { backgroundColor: colors.primary }]}
+              >
+                <Text style={[styles.avatarText, { color: colors.onPrimary }]}>
+                  {initials}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
       </View>
 
       {/* Featured Destination Hero Banner */}
       {showFeatured ? (
         <View style={styles.featuredSection}>
-          <FeaturedDestinationCard
-            country={featuredCountry}
-            onPress={() =>
+          <TrendingCarousel
+            countries={trending}
+            onOpen={country =>
               navigation.navigate('CountryDetails', {
-                countryCode: featuredCountry.cca3,
+                countryCode: country.cca3,
               })
             }
           />
@@ -163,7 +188,10 @@ export function ExploreScreen() {
       <FlatList
         testID="country-list"
         style={{ backgroundColor: colors.background }}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 12 },
+        ]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         ListHeaderComponent={header}
@@ -181,13 +209,17 @@ export function ExploreScreen() {
         ItemSeparatorComponent={CardGap}
         data={countries}
         keyExtractor={item => item.cca3}
-        renderItem={({ item }) => (
-          <CountryCard
-            country={item}
-            onPress={() =>
-              navigation.navigate('CountryDetails', { countryCode: item.cca3 })
-            }
-          />
+        renderItem={({ item, index }) => (
+          <FadeInView delay={index < 8 ? index * 45 : 0}>
+            <CountryCard
+              country={item}
+              onPress={() =>
+                navigation.navigate('CountryDetails', {
+                  countryCode: item.cca3,
+                })
+              }
+            />
+          </FadeInView>
         )}
         refreshing={!!data && isFetching}
         onRefresh={refresh}
@@ -222,13 +254,13 @@ const styles = StyleSheet.create({
   },
   greeting: { fontSize: 15, fontWeight: '700' },
   subtitle: { fontSize: 16 },
+  heroActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 12,
   },
   avatarText: {
     fontSize: 16,

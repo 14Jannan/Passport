@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   region: {
-    color: '#E88C70',
+    color: '#FFB49E',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
