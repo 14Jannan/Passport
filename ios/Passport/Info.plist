@@ -43,6 +43,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Take travel photos to attach to your journal entries.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Connect to the Passport development server on your local network.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
