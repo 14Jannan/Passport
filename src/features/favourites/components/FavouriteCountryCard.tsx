@@ -12,6 +12,8 @@ import { CountryFlag } from '../../countries/components/CountryCard';
 import { useCountryTheme } from '../../countries/countryTheme';
 import { getCountryPhotography } from '../../countries/data/photography';
 import type { Country } from '../../countries/types';
+import { BucketStatusBadge } from '../../bucketList/components/BucketStatusBadge';
+import { useBucketStatus } from '../hooks/useFavourites';
 import { FavouriteButton } from './FavouriteButton';
 
 /**
@@ -23,10 +25,14 @@ import { FavouriteButton } from './FavouriteButton';
 export function FavouriteCountryCard({
   country,
   onPress,
+  onChangeStatus,
 }: {
   country: Country;
   onPress: () => void;
+  /** Opens the bucket status picker for this country. */
+  onChangeStatus?: () => void;
 }) {
+  const status = useBucketStatus(country.cca3);
   const { theme, strong } = useCountryTheme();
   const { colors } = theme;
   const photo = getCountryPhotography(country.cca3);
@@ -96,6 +102,19 @@ export function FavouriteCountryCard({
           <Text numberOfLines={1} style={{ color: strong, fontWeight: '600' }}>
             {region}
           </Text>
+          {status && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Change travel status for ${country.commonName}`}
+              accessibilityHint="Opens the bucket list status picker"
+              disabled={!onChangeStatus}
+              onPress={onChangeStatus}
+              hitSlop={6}
+              style={styles.status}
+            >
+              <BucketStatusBadge status={status} compact />
+            </Pressable>
+          )}
         </View>
 
         <FavouriteButton
@@ -131,4 +150,5 @@ const styles = StyleSheet.create({
   },
   copy: { flex: 1, gap: 3 },
   title: { fontSize: 17, fontWeight: '700' },
+  status: { alignSelf: 'flex-start', marginTop: 4 },
 });

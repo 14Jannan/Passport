@@ -5,7 +5,7 @@ import {
   addFavourite,
   removeFavourite,
   toggleFavourite,
-  updateFavourite,
+  updateBucketStatus,
   setFavouritesError,
   clearFavouritesError,
   type FavouritesState,
@@ -126,11 +126,11 @@ describe('favouritesSlice', () => {
     });
   });
 
-  describe('updateFavourite', () => {
+  describe('updateBucketStatus', () => {
     it('updates bucketStatus of a saved country', () => {
       const state = favouritesReducer(
         makeState([japan]),
-        updateFavourite({ countryCode: 'JPN', bucketStatus: 'visited' }),
+        updateBucketStatus({ countryCode: 'JPN', bucketStatus: 'visited' }),
       );
       expect(state.items[0]!.bucketStatus).toBe('visited');
     });
@@ -138,7 +138,7 @@ describe('favouritesSlice', () => {
     it('does nothing for a country that is not saved', () => {
       const state = favouritesReducer(
         makeState([japan]),
-        updateFavourite({ countryCode: 'CAN', bucketStatus: 'planning' }),
+        updateBucketStatus({ countryCode: 'CAN', bucketStatus: 'planning' }),
       );
       expect(state.items).toEqual([japan]);
     });

@@ -116,25 +116,69 @@ Country Details shows a **Famous places** gallery for all ~250 countries, not on
 
 ## Screens
 
-| Screen              | Status      | Description                                                                        |
-| ------------------- | ----------- | ---------------------------------------------------------------------------------- |
-| **Session Splash**  | Implemented | Brand compass icon, wordmark, travel quote, session check                          |
-| **Sign In**         | Implemented | Travel brand presentation, validated form, demo account helper                     |
-| **Register**        | Implemented | DummyJSON registration simulation with validation feedback                         |
-| **Explore**         | Implemented | Time-aware greeting, theme toggle, trending carousel, search, filters, photo cards |
-| **Favourites**      | Implemented | Saved destinations wishlist, search, photo cards, remove action, empty states      |
-| **Country Details** | Implemented | Hero photo, personal journal, famous places gallery, overview, geography, share    |
-| **Profile**         | Implemented | Avatar, saved/journal/photo statistics, journal shortcut, settings, logout         |
-| **Settings**        | Implemented | Appearance mode selector (Light/Dark/System), application credits                  |
-| **Journal**         | Implemented | Stats, "start a journal" chips, photo-rich entry cards, empty state                |
-| **Journal Editor**  | Implemented | Note with counter, camera/gallery photo, replace/remove, save, delete, guards      |
-| **Bucket List**     | Foundation  | Scheduled for Prompt 7                                                             |
+| Screen              | Status      | Description                                                                            |
+| ------------------- | ----------- | -------------------------------------------------------------------------------------- |
+| **Session Splash**  | Implemented | Brand compass icon, wordmark, travel quote, session check                              |
+| **Sign In**         | Implemented | Travel brand presentation, validated form, demo account helper                         |
+| **Register**        | Implemented | DummyJSON registration simulation with validation feedback                             |
+| **Explore**         | Implemented | Time-aware greeting, theme toggle, trending carousel, search, filters, photo cards     |
+| **Favourites**      | Implemented | Saved destinations wishlist, search, photo cards, remove action, empty states          |
+| **Country Details** | Implemented | Hero photo, personal journal, famous places gallery, overview, geography, share        |
+| **Profile**         | Implemented | Avatar, saved/journal/photo statistics, journal shortcut, settings, logout             |
+| **Settings**        | Implemented | Appearance mode selector (Light/Dark/System), application credits                      |
+| **Journal**         | Implemented | Stats, "start a journal" chips, photo-rich entry cards, empty state                    |
+| **Journal Editor**  | Implemented | Note with counter, camera/gallery photo, replace/remove, save, delete, guards          |
+| **Bucket List**     | Implemented | Status counts, visited progress, filter chips, photo cards, status sheet, empty states |
 
 ## Favourites
 
 - Saved destinations are synchronized in Redux Toolkit (`favouritesSlice`) and persisted to AsyncStorage under user-scoped keys (`passport:favourites:<userId>`).
 - Cross-user data isolation ensures switching accounts preserves independent wishlists.
+- Saved-country cards show the bucket-list status; tapping the badge opens the status picker.
 - Removal policy: a favourite without journal content is removed immediately. If it has a journal note or photo, the user is asked to confirm, and removing it also deletes the journal entry and its stored photo (`removeFavouriteAndJournal`). Journal content is never deleted silently.
+
+## Travel bucket list
+
+Every saved country carries exactly one travel status:
+
+| Status            | Meaning                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| **Want to Visit** | A dream destination on the wishlist (default for every new favourite) |
+| **Planning**      | The trip is actively being planned                                    |
+| **Visited**       | The user has been there                                               |
+
+### Status lifecycle
+
+1. Saving a country creates its favourite with `bucketStatus: 'want_to_visit'`.
+2. The status can be changed any number of times from the Bucket List, Country Details (Travel planning) or the Favourites card badge.
+3. Removing the favourite removes its status too. Saving it again starts from Want to Visit. If the country has journal content, removal is confirmed first and the journal entry and photo are deleted with it.
+4. Changing the status never touches the journal entry, so a country can be marked Visited and its notes and photos edited from the Bucket List.
+
+No travel dates are stored or invented.
+
+### State-management design
+
+- The status lives on `FavouriteCountry.bucketStatus` in the existing `favouritesSlice`. There is no second status store, so a status can never exist without its favourite or disagree with it.
+- `updateBucketStatus` ignores countries that are not saved. Unsaved countries in Country Details show **Add to Favourites** instead of a status control.
+- Selectors: `selectBucketStatusCounts` and `selectFavouritesByStatus` (memoized with `createSelector`), plus `selectCountryBucketStatus`. Every screen reads from these, so counts, cards, badges and Country Details update together.
+- `changeBucketStatus` (thunk) updates Redux, writes the user's favourites to storage, shows a success toast and, if the write fails, restores the previous status and shows an error.
+- Hydration and automatic persistence of favourites run in a single `useFavouritesSync` hook mounted once in the tab navigator; `useFavourites` is now side-effect free.
+
+### Persistence and migration
+
+- Statuses are stored with the favourites under the existing per-user key `passport:favourites:<userId>`.
+- On load, favourites saved before statuses existed, or with an unknown status, are migrated to Want to Visit instead of being dropped; invalid entries are skipped individually and duplicate country codes are collapsed so each country has one status.
+
+### UI
+
+- **Bucket List tab**: "My Travel Bucket List — Dream it. Plan it. Explore it.", a visited-progress bar, three status chips with live counts, and photo-rich cards (journal photo, curated photo or flag) with flag, name, region, capital, status badge and **Change Status**, **Journal / Add Note** and **Details** actions.
+- **BucketStatusSelector** (reusable): an animated segmented control for Country Details, and an option list with descriptions inside the **BucketStatusSheet** bottom sheet used by the Bucket List and Favourites.
+- Empty states for no favourites and for each empty status, each with an action (Explore Countries, Change Status, View Favourites).
+- Subtle animations (sliding segment indicator, badge pop on change, card press scale, staggered filter transitions) respect reduced motion. All colours come from the theme, so Light, Dark and System modes work.
+
+| Bucket list (dark)                                                 | Status sheet                                              | Country Details                                                                     | Bucket list (light)                                                  | Favourites                                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| ![Bucket list in dark mode](docs/screenshots/bucket-list-dark.png) | ![Status sheet](docs/screenshots/bucket-status-sheet.png) | ![Travel planning on Country Details](docs/screenshots/details-travel-planning.png) | ![Bucket list in light mode](docs/screenshots/bucket-list-light.png) | ![Status badge on a favourite card](docs/screenshots/favourites-status-badge.png) |
 
 ## Travel journal (Personal Notes & Photos)
 
@@ -189,7 +233,7 @@ npm run format:check
 npm run test:ci
 ```
 
-Native modules are mocked in `jest.setup.js` (`react-native-image-picker`, `react-native-file-access`). Journal behaviour is covered by `__tests__/journal.test.tsx`.
+Native modules are mocked in `jest.setup.js` (`react-native-image-picker`, `react-native-file-access`). Journal behaviour is covered by `__tests__/journal.test.tsx`; bucket-list state, persistence and UI by `__tests__/bucketList.test.ts` and `__tests__/bucketListScreen.test.tsx`.
 
 For Android build verification, run `./gradlew :app:assembleDebug` from `android/` on macOS or Linux, or `./gradlew.bat :app:assembleDebug` from PowerShell on Windows.
 
@@ -201,5 +245,6 @@ For Android build verification, run `./gradlew :app:assembleDebug` from `android
 - `src/components/` contains reusable buttons, inputs, headers, and empty states.
 - `src/theme/` contains design tokens, light/dark themes, `ThemeProvider`, and `useAppTheme`.
 - `src/services/` contains the API base query and storage adapters.
+- `src/features/bucketList/` contains the Bucket List screen, status badge, selector, sheet and Travel planning section.
 - `src/features/journal/` contains the journal model, slice, storage, photo services, thunks and screens.
 - `src/hooks/` contains shared hooks such as `useReducedMotion`.

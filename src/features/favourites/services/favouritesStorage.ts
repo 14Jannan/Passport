@@ -1,5 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { FavouriteCountry } from '../types/favourite.types';
+import {
+  DEFAULT_BUCKET_STATUS,
+  isBucketStatus,
+  type FavouriteCountry,
+} from '../types/favourite.types';
 
 function storageKey(userId: number): string {
   return `passport:favourites:${userId}`;
@@ -21,25 +25,51 @@ export async function loadFavourites(
   if (raw === null) {
     return [];
   }
+  let parsed: unknown;
   try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-    // Validate each entry loosely — drop corrupted entries instead of
-    // discarding the entire list.
-    return parsed.filter(
-      (item): item is FavouriteCountry =>
-        typeof item === 'object' &&
-        item !== null &&
-        typeof item.countryCode === 'string' &&
-        typeof item.savedAt === 'string' &&
-        typeof item.bucketStatus === 'string',
-    );
+    parsed = JSON.parse(raw);
   } catch {
     // Corrupted JSON — treat as empty.
     return [];
   }
+  return parseStoredFavourites(parsed);
+}
+
+/**
+ * Validate stored favourites without discarding the whole list.
+ *
+ * - Entries without a usable country code or savedAt are dropped.
+ * - Entries saved before bucket statuses existed (or with an unknown status)
+ *   are migrated to the default 'want_to_visit' instead of being lost.
+ * - Duplicate country codes keep the first entry so each country has
+ *   exactly one status.
+ */
+export function parseStoredFavourites(parsed: unknown): FavouriteCountry[] {
+  if (!Array.isArray(parsed)) {
+    return [];
+  }
+  const seen = new Set<string>();
+  const result: FavouriteCountry[] = [];
+  for (const item of parsed) {
+    if (
+      typeof item !== 'object' ||
+      item === null ||
+      typeof item.countryCode !== 'string' ||
+      typeof item.savedAt !== 'string' ||
+      seen.has(item.countryCode)
+    ) {
+      continue;
+    }
+    seen.add(item.countryCode);
+    result.push({
+      countryCode: item.countryCode,
+      savedAt: item.savedAt,
+      bucketStatus: isBucketStatus(item.bucketStatus)
+        ? item.bucketStatus
+        : DEFAULT_BUCKET_STATUS,
+    });
+  }
+  return result;
 }
 
 /**

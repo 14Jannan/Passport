@@ -2,6 +2,7 @@ import { StatusBar } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { store } from './src/app/store';
+import { ToastProvider } from './src/components/Toast';
 import { useQueryListeners } from './src/app/useQueryListeners';
 import { useSessionLifecycle } from './src/features/auth/hooks/useSessionLifecycle';
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -27,7 +28,9 @@ export default function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <AppContent />
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </Provider>

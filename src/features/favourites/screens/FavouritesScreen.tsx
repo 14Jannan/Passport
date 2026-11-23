@@ -16,6 +16,10 @@ import { AppHeader } from '../../../components/AppHeader';
 import { EmptyState } from '../../../components/EmptyState';
 import type { MainStackParams } from '../../../navigation/types';
 import { AppThemeOverride } from '../../../theme/theme';
+import {
+  BucketStatusSheet,
+  type StatusTarget,
+} from '../../bucketList/components/BucketStatusSheet';
 import { useGetCountriesQuery } from '../../countries/api/countriesApi';
 import { useCountryTheme } from '../../countries/countryTheme';
 import type { Country } from '../../countries/types';
@@ -38,6 +42,7 @@ export function FavouritesScreen() {
 
   const [searchText, setSearchText] = useState('');
   const [focused, setFocused] = useState(false);
+  const [statusTarget, setStatusTarget] = useState<StatusTarget | null>(null);
   const query = searchText.trim().toLowerCase();
 
   // Build the list of favourite countries using the API data for rendering.
@@ -205,8 +210,18 @@ export function FavouritesScreen() {
                 countryCode: item.cca3,
               })
             }
+            onChangeStatus={() =>
+              setStatusTarget({
+                countryCode: item.cca3,
+                countryName: item.commonName,
+              })
+            }
           />
         )}
+      />
+      <BucketStatusSheet
+        target={statusTarget}
+        onClose={() => setStatusTarget(null)}
       />
     </AppThemeOverride.Provider>
   );
